@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة متابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V31.9)</title>
+    <title>منظومة متابعة المشاريع الاستثمارية المجازة (الشامل - V32.1)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (Excel) -->
+    <!-- SheetJS (Excel Parser) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -19,54 +17,11 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Cairo', sans-serif; }
         .whitespace-nowrap { white-space: nowrap !important; }
-        .tv-mode-active { background-color: #0f172a !important; color: #f8fafc !important; }
-        .tv-mode-active .bg-white { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
-        .tv-mode-active .text-gray-700, .tv-mode-active .text-gray-800, .tv-mode-active .text-blue-900 { color: #f1f5f9 !important; }
-        
-        @media print {
-            @page { size: A4 portrait; margin: 6mm; }
-            html, body {
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                font-size: 8.5px !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .no-print { display: none !important; }
-            .print-container {
-                width: 100% !important;
-                max-width: 190mm !important;
-                padding: 0 !important;
-                margin: 0 auto !important;
-                box-shadow: none !important;
-                border: none !important;
-                direction: rtl !important;
-                box-sizing: border-box !important;
-            }
-            .print-card-compact { padding: 6px 8px !important; }
-            .chart-wrapper { height: 110px !important; }
-            .print-sector-compact { gap: 4px !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        }
-
-        .chart-wrapper {
-            position: relative;
-            width: 100%;
-            height: 140px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .interactive-card { transition: all 0.25s ease-in-out; }
-        .interactive-card:hover { transform: translateY(-2px); }
     </style>
 </head>
-<body id="mainBody" class="bg-gray-100 text-gray-800 min-h-screen flex flex-col transition-colors duration-500">
+<body id="mainBody" class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Login & Role Selection Overlay Modal -->
+    <!-- Login Modal -->
     <div id="loginModal" class="fixed inset-0 bg-blue-950 bg-opacity-95 flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-right border border-blue-100">
             <div class="text-center mb-6">
@@ -81,389 +36,98 @@
             <div class="space-y-4 text-xs">
                 <div>
                     <label class="block font-semibold mb-1 text-gray-700">اختر صفة الدخول للنظام</label>
-                    <select id="loginRoleSelect" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-blue-950">
-                        <option value="user">مستخدم عادي (تصفح واستعلام ومؤشرات - بدون تعديل)</option>
-                        <option value="admin">مدير النظام (أدمن - صلاحيات كاملة وإدارة المشاريع)</option>
+                    <select id="loginRoleSelect" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-blue-950">
+                        <option value="user">مستخدم عادي (تصفح واستعلام ومؤشرات)</option>
+                        <option value="admin">مدير النظام (أدمن - صلاحيات وإدارة الاستيراد)</option>
                     </select>
                 </div>
-                <button type="button" onclick="tryLoginSecure()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md transition text-sm">الدخول إلى المنظومة</button>
+                <button type="button" onclick="tryLoginSecure()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md text-sm">الدخول إلى المنظومة</button>
             </div>
         </div>
     </div>
 
     <!-- Header -->
-    <header class="bg-blue-900 text-white shadow-md no-print" id="mainHeader">
+    <header class="bg-blue-900 text-white shadow-md">
         <div class="w-full px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-4 space-x-reverse">
                 <div class="bg-gradient-to-r from-blue-700 to-indigo-800 px-4 py-2 rounded-xl border border-blue-600 shadow-md">
                     <span class="text-2xl font-extrabold text-yellow-400 tracking-wider">الشامل</span>
                 </div>
-                <div class="flex items-center space-x-3 space-x-reverse border-r border-blue-800 pr-4">
-                    <div class="bg-blue-800 p-2 rounded-lg border border-blue-700">
-                        <i class="fa-solid fa-brain text-yellow-400 text-lg"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-bold text-white">هيئة استثمار الديوانية / التحول الرقمي</h1>
-                        <p class="text-[11px] text-blue-200">المنظومة التحليلية الذكية للمشاريع الاستثمارية (V31.9)</p>
-                    </div>
+                <div>
+                    <h1 class="text-sm font-bold text-white">هيئة استثمار الديوانية / التحول الرقمي</h1>
+                    <p class="text-[11px] text-blue-200">المنظومة الذكية للمشاريع الاستثمارية (V32.1)</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <div id="currentUserBadge" class="bg-blue-950 border border-blue-800 px-3 py-1 rounded-xl text-center shadow-inner">
+                <div id="currentUserBadge" class="bg-blue-950 border border-blue-800 px-3 py-1 rounded-xl text-center">
                     <span id="userRoleText" class="text-[10px] text-yellow-400 font-bold block"></span>
                 </div>
-                <div class="bg-blue-950 border border-blue-800 px-4 py-1.5 rounded-xl text-center shadow-inner">
-                    <span class="text-[10px] tracking-wider text-blue-300 block font-medium">تصميم-تنفيذ-اشراف</span>
-                    <span class="text-xs font-bold text-yellow-400">د. خالد محمد الخفاجي</span>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2 text-xs">
-                <span id="currentDateDisplay" class="bg-blue-950 px-3 py-1.5 rounded-lg border border-blue-800 text-blue-100 whitespace-nowrap"></span>
-                <button onclick="toggleTVMode()" id="tvModeBtn" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg transition shadow-sm flex items-center gap-1">
-                    <i class="fa-solid fa-tv"></i> وضع الشاشة
-                </button>
-                <button onclick="logoutSystem()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition shadow-sm"><i class="fa-solid fa-right-from-bracket ml-1"></i> خروج</button>
+                <button onclick="location.reload()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs"><i class="fa-solid fa-right-from-bracket ml-1"></i> خروج</button>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="w-full px-6 py-4 flex-grow print-container">
+    <main class="w-full px-6 py-4 flex-grow">
 
-        <!-- Quick Filter Pills Bar -->
-        <div class="bg-white rounded-xl shadow-sm p-3 mb-4 border no-print flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-1.5 flex-wrap text-xs">
-                <span class="font-bold text-blue-900 ml-2"><i class="fa-solid fa-filter text-blue-600 ml-1"></i> التصفية السريعة:</span>
-                <button onclick="applyQuickFilter('all')" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold transition shadow-sm q-pill" id="pill-all">الكل</button>
-                <button onclick="applyQuickFilter('قيد التنفيذ')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-blue-50 text-gray-700 font-semibold transition q-pill" id="pill-قيد التنفيذ">قيد التنفيذ</button>
-                <button onclick="applyQuickFilter('تشغيل تجاري')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-emerald-50 text-gray-700 font-semibold transition q-pill" id="pill-تشغيل تجاري">تشغيل تجاري</button>
-                <button onclick="applyQuickFilter('يعمل ومتأخر')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-purple-50 text-gray-700 font-semibold transition q-pill" id="pill-يعمل ومتأخر">يعمل ومتأخر</button>
-                <button onclick="applyQuickFilter('متوقف')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-red-50 text-gray-700 font-semibold transition q-pill" id="pill-متوقف">متوقف</button>
-                <button onclick="applyQuickFilter('منجز')" class="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-yellow-50 text-gray-700 font-semibold transition q-pill" id="pill-منجز">منجز</button>
-                <button onclick="applyQuickFilter('delayed_risk')" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-semibold transition flex items-center gap-1 q-pill" id="pill-delayed_risk">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> المشاريع المتأخرة ⚠️
-                </button>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="openAIAnalysisModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-microchip"></i> التحليل الذكي والتعثر AI
-                </button>
-                <button onclick="openExecutiveSummary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> الملخص التنفيذي
-                </button>
-            </div>
-        </div>
-
-        <!-- Control Bar & Filters -->
-        <div class="bg-white rounded-xl shadow-sm p-4 mb-4 border no-print">
-            <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 w-full lg:w-auto flex-grow text-xs">
-                    <div class="relative">
-                        <i class="fa-solid fa-search absolute right-3 top-3 text-gray-400"></i>
-                        <input type="text" id="searchInput" oninput="filterTable()" placeholder="بحث باسم المشروع، المستثمر..." class="w-full pl-3 pr-9 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <select id="filterSector" onchange="filterTable()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="">كل القطاعات</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterStatus" onchange="filterTable()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="">كل الحالات</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterOwner" onchange="filterTable()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="">كل الجهات المالكة</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select id="filterValuation" onchange="filterTable()" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option value="">كل التثمين</option>
-                        </select>
-                    </div>
+        <!-- Control Bar -->
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4 border">
+            <div class="flex justify-between items-center flex-wrap gap-3">
+                <div class="text-xs font-bold text-blue-900">
+                    جدول عرض المشاريع الاستثمارية المجازة السحابي
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="flex flex-row flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
-                    <button id="adminBtnAdd" onclick="openAddProjectModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-plus"></i> إضافة مشروع
-                    </button>
-                    <button id="adminBtnExcel" onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-file-excel"></i> Excel
-                    </button>
-                    <button id="adminBtnPrint" onclick="printStatisticalReport()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-print"></i> طباعة التقرير الإحصائي
-                    </button>
-                    <label id="adminLblImport" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold shadow transition cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
-                        <i class="fa-solid fa-file-import"></i> استيراد ملف Excel
-                        <input type="file" id="importFile" accept=".xlsx, .xls, .csv" onchange="importFromExcel(event)" class="hidden">
+                <div class="flex items-center gap-2">
+                    <label id="adminLblImport" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow cursor-pointer flex items-center gap-1.5 whitespace-nowrap">
+                        <i class="fa-solid fa-file-import"></i> استيراد ملف Excel تلقائي
+                        <input type="file" id="importFile" accept=".xlsx, .xls, .csv" onchange="importFromExcelSmart(event)" class="hidden">
                     </label>
                 </div>
             </div>
         </div>
 
-        <!-- Print Header -->
-        <div class="hidden print:block text-center border-b-2 border-blue-900 pb-2 mb-3 w-full">
-            <div class="flex justify-between items-center text-[10px] text-gray-700 px-2">
-                <div class="text-right">
-                    <span class="font-bold text-blue-950 block text-xs">جمهورية العراق - هيئة استثمار الديوانية</span>
-                    <span>فريق التحول الرقمي / منظومة متابعة المشاريع (الشامل)</span>
-                </div>
-                <div class="text-center">
-                    <h2 class="text-sm font-extrabold text-blue-900 border-b pb-0.5 mb-0.5">التقرير الإحصائي الشامل والتحليلي للمشاريع الاستثمارية المجازة</h2>
-                    <span class="text-[9px] text-gray-500">مؤشرات الأداء الكلي وتوزيع القطاعات والحالات العملياتية</span>
-                </div>
-                <div class="text-left">
-                    <span class="block">تاريخ الإصدار: <span id="printDateSpan" class="font-mono font-bold"></span></span>
-                    <span class="text-[9px] text-blue-800 font-semibold">إشراف: د. خالد محمد الخفاجي</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3 text-xs w-full">
-            <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card">
-                <div>
-                    <p class="text-blue-100 font-medium text-[11px]">إجمالي المشاريع</p>
-                    <h3 id="statTotalProjects" class="text-xl font-bold mt-0.5">0</h3>
-                </div>
-                <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-folder-open text-2xl"></i></div>
-            </div>
-            <div class="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card">
-                <div>
-                    <p class="text-emerald-100 font-medium text-[11px]">إجمالي الكلف الاستثمارية</p>
-                    <h3 id="statTotalCost" class="text-xs font-bold mt-0.5 font-mono">0</h3>
-                </div>
-                <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-wallet text-2xl"></i></div>
-            </div>
-            <div class="bg-gradient-to-br from-purple-600 to-purple-800 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card">
-                <div>
-                    <p class="text-purple-100 font-medium text-[11px]">إجمالي مبالغ التثمين</p>
-                    <h3 id="statTotalValuation" class="text-xs font-bold mt-0.5 font-mono">0</h3>
-                </div>
-                <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-coins text-2xl"></i></div>
-            </div>
-            <div class="bg-gradient-to-br from-amber-600 to-amber-800 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card">
-                <div>
-                    <p class="text-amber-100 font-medium text-[11px]">متوسط نسبة الإنجاز العام</p>
-                    <h3 id="statAvgProgress" class="text-xl font-bold mt-0.5">0%</h3>
-                </div>
-                <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-chart-line text-2xl"></i></div>
-            </div>
-            <div class="bg-gradient-to-br from-teal-700 to-cyan-900 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card col-span-2 sm:col-span-1">
-                <div>
-                    <p class="text-teal-100 font-medium text-[11px]">مؤشر الصحة الاستثمارية</p>
-                    <h3 id="statHealthGaugeVal" class="text-xl font-bold mt-0.5 font-mono">0.0%</h3>
-                    <span id="statHealthGaugeStatus" class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-semibold text-teal-100">مستقر</span>
-                </div>
-                <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-heart-pulse text-2xl"></i></div>
-            </div>
-        </div>
-
-        <!-- Sector Stats Summary Section -->
-        <div class="bg-white p-3 rounded-xl shadow-sm border mb-3 w-full">
-            <h3 class="font-bold text-xs text-blue-900 mb-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-layer-group text-blue-600"></i> ملخص القطاعات والكلف الاستثمارية الكلية (انقر لتصفية الجدول)
-            </h3>
-            <div id="sectorStatsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 print-sector-compact"></div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 text-xs w-full">
-            <div class="bg-white p-3 rounded-xl shadow-sm border flex flex-col items-center w-full">
-                <h3 class="font-bold text-gray-700 mb-2 w-full text-right text-[11px] flex justify-between items-center">
-                    <span><i class="fa-solid fa-chart-column ml-1 text-blue-600"></i> توزيع المشاريع حسب القطاع</span>
-                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي (انقر على العمود للفلترة)</span>
-                </h3>
-                <div class="chart-wrapper">
-                    <canvas id="sectorChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-white p-3 rounded-xl shadow-sm border flex flex-col items-center w-full">
-                <h3 class="font-bold text-gray-700 mb-2 w-full text-right text-[11px] flex justify-between items-center">
-                    <span><i class="fa-solid fa-chart-pie ml-1 text-blue-600"></i> توزيع المشاريع حسب الحالة</span>
-                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي (انقر على الجزء للفلترة)</span>
-                </h3>
-                <div class="chart-wrapper">
-                    <canvas id="statusChart"></canvas>
-                </div>
-                <div id="customStatusLegend" class="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-2 text-[10px] w-full border-t pt-2"></div>
-            </div>
-        </div>
-
         <!-- Data Table -->
-        <div class="mt-6 no-print w-full">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
-                <div class="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
-                    <h3 class="font-bold text-sm text-gray-700"><i class="fa-solid fa-table-list ml-1 text-blue-600"></i> التقرير الشامل للمشاريع الاستثمارية المجازة (نظام الشامل)</h3>
-                    <span id="tableCount" class="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-semibold">0 مشروع</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right text-xs">
-                        <thead class="bg-gray-100 text-gray-700 uppercase font-semibold">
-                            <tr>
-                                <th class="p-2 text-center whitespace-nowrap w-[40px]">ت</th>
-                                <th class="p-2 whitespace-nowrap w-[70px]">رقم الإجازة</th>
-                                <th class="p-2 whitespace-nowrap w-[85px]">تاريخ الإصدار</th>
-                                <th class="p-2 min-w-[150px]">اسم المشروع الاستثماري</th>
-                                <th class="p-2 whitespace-nowrap w-[90px]">القطاع</th>
-                                <th class="p-2 min-w-[130px]">المستثمر / الشركة</th>
-                                <th class="p-2 min-w-[110px]">المكتب الاستشاري</th>
-                                <th class="p-2 whitespace-nowrap w-[100px]">الكلفة (د.ع)</th>
-                                <th class="p-2 whitespace-nowrap w-[80px]">الموقع</th>
-                                <th class="p-2 text-center whitespace-nowrap w-[60px]">رقم القطعة</th>
-                                <th class="p-2 text-center whitespace-nowrap w-[65px]">المساحة</th>
-                                <th class="p-2 whitespace-nowrap w-[85px]">مدة التنفيذ</th>
-                                <th class="p-2 min-w-[110px]">التعاقد مع</th>
-                                <th class="p-2 whitespace-nowrap w-[85px]">المباشرة الفعلية</th>
-                                <th class="p-2 whitespace-nowrap w-[85px]">التشغيل التجاري</th>
-                                <th class="p-2 whitespace-nowrap w-[100px]">الجهة المالكة</th>
-                                <th class="p-2 whitespace-nowrap w-[95px]">حالة المشروع</th>
-                                <th class="p-2 text-center whitespace-nowrap w-[110px]">نسبة الإنجاز</th>
-                                <th class="p-2 whitespace-nowrap w-[75px]">التثمين</th>
-                                <th class="p-2 whitespace-nowrap w-[95px]">مقدار التثمين (د.ع)</th>
-                                <th class="p-2 text-center whitespace-nowrap w-[110px]" id="thActionsHeader">الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectsTableBody" class="divide-y divide-gray-200"></tbody>
-                    </table>
-                </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border">
+            <div class="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                <h3 class="font-bold text-sm text-gray-700"><i class="fa-solid fa-table-list ml-1 text-blue-600"></i> قائمة المشاريع الاستثمارية المسجلة</h3>
+                <span id="tableCount" class="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full font-semibold">0 مشروع</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs">
+                    <thead class="bg-gray-100 text-gray-700 uppercase font-semibold">
+                        <tr>
+                            <th class="p-2 text-center whitespace-nowrap">ت</th>
+                            <th class="p-2 whitespace-nowrap">رقم الإجازة</th>
+                            <th class="p-2 whitespace-nowrap">تاريخ الإصدار</th>
+                            <th class="p-2 min-w-[150px]">اسم المشروع الاستثماري</th>
+                            <th class="p-2 whitespace-nowrap">القطاع</th>
+                            <th class="p-2 min-w-[130px]">المستثمر / الشركة</th>
+                            <th class="p-2 min-w-[110px]">المكتب الاستشاري</th>
+                            <th class="p-2 whitespace-nowrap">الكلفة (د.ع)</th>
+                            <th class="p-2 whitespace-nowrap">الموقع</th>
+                            <th class="p-2 text-center whitespace-nowrap">رقم القطعة</th>
+                            <th class="p-2 text-center whitespace-nowrap">المساحة</th>
+                            <th class="p-2 whitespace-nowrap">مدة التنفيذ</th>
+                            <th class="p-2 min-w-[110px]">التعاقد مع</th>
+                            <th class="p-2 whitespace-nowrap">المباشرة الفعلية</th>
+                            <th class="p-2 whitespace-nowrap">التشغيل التجاري</th>
+                            <th class="p-2 whitespace-nowrap">الجهة المالكة</th>
+                            <th class="p-2 whitespace-nowrap">حالة المشروع</th>
+                            <th class="p-2 text-center whitespace-nowrap">نسبة الإنجاز</th>
+                            <th class="p-2 whitespace-nowrap">التثمين</th>
+                            <th class="p-2 whitespace-nowrap">مقدار التثمين</th>
+                            <th class="p-2 text-center whitespace-nowrap">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody" class="divide-y divide-gray-200"></tbody>
+                </table>
             </div>
         </div>
     </main>
 
-    <!-- Project 360 View Modal -->
-    <div id="project360Modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 text-right relative">
-            <div class="flex justify-between items-start border-b pb-3 mb-4">
-                <div>
-                    <span id="m360License" class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200"></span>
-                    <h3 id="m360Name" class="text-lg font-extrabold text-blue-950 mt-1"></h3>
-                    <p id="m360Investor" class="text-xs text-gray-600 font-medium"></p>
-                </div>
-                <button onclick="document.getElementById('project360Modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-xs">
-                <div class="bg-gray-50 p-2.5 rounded-xl border"><span class="text-[10px] text-gray-500 block">القطاع</span><span id="m360Sector" class="font-bold text-blue-900"></span></div>
-                <div class="bg-gray-50 p-2.5 rounded-xl border"><span class="text-[10px] text-gray-500 block">الكلفة الاستثمارية</span><span id="m360Cost" class="font-bold text-emerald-700 font-mono"></span></div>
-                <div class="bg-gray-50 p-2.5 rounded-xl border"><span class="text-[10px] text-gray-500 block">حالة المشروع الحالية</span><span id="m360Status" class="font-bold"></span></div>
-                <div class="bg-gray-50 p-2.5 rounded-xl border"><span class="text-[10px] text-gray-500 block">نسبة الإنجاز الميداني</span><span id="m360Progress" class="font-bold text-indigo-700 font-mono"></span></div>
-            </div>
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4 text-xs">
-                <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-1.5"><i class="fa-solid fa-map-location-dot text-blue-600"></i> تفاصيل الموقع والتعاقد والتثمين</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-gray-700">
-                    <div><span>الموقع:</span> <b id="m360Loc" class="text-gray-900"></b></div>
-                    <div><span>رقم القطعة:</span> <b id="m360Plot" class="text-gray-900 font-mono"></b></div>
-                    <div><span>المساحة:</span> <b id="m360Area" class="text-gray-900 font-mono"></b></div>
-                    <div><span>الجهة المالكة:</span> <b id="m360Owner" class="text-gray-900"></b></div>
-                    <div><span>التعاقد مع:</span> <b id="m360Contract" class="text-gray-900"></b></div>
-                    <div><span>المكتب الاستشاري:</span> <b id="m360Consultant" class="text-gray-900"></b></div>
-                    <div><span>حالة التثمين:</span> <b id="m360Valuation" class="text-gray-900"></b></div>
-                    <div><span>مقدار التثمين:</span> <b id="m360ValuationAmt" class="text-purple-700 font-mono"></b></div>
-                </div>
-            </div>
-            <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('project360Modal').classList.add('hidden')" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">إغلاق</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Analysis Modal -->
-    <div id="aiAnalysisModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 text-right">
-            <div class="flex justify-between items-center pb-3 border-b mb-4">
-                <h3 class="text-base font-bold text-blue-900 flex items-center gap-2"><i class="fa-solid fa-brain text-purple-600 text-lg"></i> محرك الذكاء الاصطناعي والتحليل التنبؤي للمشاريع</h3>
-                <button onclick="document.getElementById('aiAnalysisModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-xs">
-                <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                    <h4 class="font-bold text-purple-900 mb-1"><i class="fa-solid fa-shield-halved ml-1"></i> نسبة مخاطر التعثر الفعلي</h4>
-                    <p id="aiRiskIndexVal" class="text-xl font-extrabold text-purple-700 mt-2 font-mono">0%</p>
-                </div>
-                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                    <h4 class="font-bold text-blue-900 mb-1"><i class="fa-solid fa-chart-line ml-1"></i> معامل الكفاءة الاستثمارية</h4>
-                    <p id="aiEfficiencyVal" class="text-xl font-extrabold text-blue-700 mt-2 font-mono">0.0 / 10</p>
-                </div>
-                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                    <h4 class="font-bold text-emerald-900 mb-1"><i class="fa-solid fa-lightbulb ml-1"></i> التوصية الاستراتيجية الذكية</h4>
-                    <p id="aiRecommendationVal" class="text-xs font-semibold text-emerald-800 mt-2 leading-relaxed">جاري التحليل...</p>
-                </div>
-            </div>
-            <div class="bg-gray-50 border rounded-xl p-4 mb-4 text-xs">
-                <h4 class="font-bold text-blue-950 mb-2"><i class="fa-solid fa-list-check ml-1"></i> تحليل تفصيلي للمشاريع المتأخرة والحرجة:</h4>
-                <div id="aiDelayedList" class="max-h-40 overflow-y-auto space-y-1 text-gray-700"></div>
-            </div>
-            <div class="flex justify-end gap-2"><button onclick="document.getElementById('aiAnalysisModal').classList.add('hidden')" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-xs font-semibold">إغلاق</button></div>
-        </div>
-    </div>
-
-    <!-- Executive Summary Modal -->
-    <div id="executiveSummaryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 text-right">
-            <div class="flex justify-between items-center pb-3 border-b mb-4">
-                <h3 class="text-base font-bold text-indigo-900 flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-indigo-600 text-lg"></i> الملخص التنفيذي لمنظومة الشامل</h3>
-                <button onclick="document.getElementById('executiveSummaryModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div id="executiveSummaryContent" class="space-y-3 text-xs text-gray-800 leading-relaxed"></div>
-            <div class="mt-6 flex justify-end">
-                <button onclick="document.getElementById('executiveSummaryModal').classList.add('hidden')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold">إغلاق</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Form -->
-    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden no-print">
-        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-            <div class="flex justify-between items-center pb-3 border-b mb-4">
-                <h3 id="modalTitle" class="text-lg font-bold text-blue-900">إضافة مشروع استثماري جديد</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="projectForm" onsubmit="saveProject(event)">
-                <input type="hidden" id="projectId">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div><label class="block font-semibold mb-1">رقم الإجازة</label><input type="text" id="pLicenseNum" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">تاريخ الإصدار</label><input type="date" id="pLicenseDate" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">اسم المشروع الاستثماري *</label><input type="text" id="pName" required class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">القطاع</label><input type="text" id="pSector" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">المستثمر / الشركة</label><input type="text" id="pInvestor" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">المكتب الاستشاري</label><input type="text" id="pConsultant" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">الكلفة (د.ع)</label><input type="number" id="pCost" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">الموقع</label><input type="text" id="pLocation" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">رقم القطعة</label><input type="text" id="pPlotNum" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">المساحة</label><input type="text" id="pArea" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">مدة التنفيذ</label><input type="text" id="pDuration" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">التعاقد مع</label><input type="text" id="pContractWith" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">المباشرة الفعلية</label><input type="date" id="pActualStart" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">التشغيل التجاري</label><input type="date" id="pCommercialOp" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">الجهة المالكة</label><input type="text" id="pOwnerEntity" class="w-full border rounded-lg p-2"></div>
-                    <div>
-                        <label class="block font-semibold mb-1">حالة المشروع</label>
-                        <select id="pStatus" class="w-full border rounded-lg p-2">
-                            <option value="قيد التنفيذ">قيد التنفيذ</option>
-                            <option value="تشغيل تجاري">تشغيل تجاري</option>
-                            <option value="يعمل ومتأخر">يعمل ومتأخر</option>
-                            <option value="منجز">منجز</option>
-                            <option value="لم يباشر">لم يباشر</option>
-                            <option value="متوقف">متوقف</option>
-                            <option value="اجازة مسحوبه">اجازة مسحوبه</option>
-                        </select>
-                    </div>
-                    <div><label class="block font-semibold mb-1">نسبة الإنجاز (%)</label><input type="number" min="0" max="100" id="pProgress" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">التثمين</label><input type="text" id="pValuation" class="w-full border rounded-lg p-2"></div>
-                    <div><label class="block font-semibold mb-1">مقدار التثمين (د.ع)</label><input type="number" id="pValuationAmount" class="w-full border rounded-lg p-2"></div>
-                </div>
-                <div class="mt-6 flex justify-end space-x-2 space-x-reverse">
-                    <button type="button" onclick="closeModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg text-xs">إلغاء</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs">حفظ التغييرات</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- JavaScript Logic & Firebase Integration -->
+    <!-- Firebase Code & Smart Excel Logic -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
@@ -481,63 +145,28 @@
 
         let projects = [];
         let currentUserRole = null; 
-        let statusChartInstance = null;
-        let sectorChartInstance = null;
-        let currentQuickFilter = 'all';
-
-        const allowedStatuses = ["قيد التنفيذ", "تشغيل تجاري", "يعمل ومتأخر", "منجز", "لم يباشر", "متوقف", "اجازة مسحوبه"];
-        const statusColorsList = ['#3b82f6', '#10b981', '#8b5cf6', '#eab308', '#f59e0b', '#ef4444', '#6b7280'];
-
-        const defaultProjects = [
-            { id: 1, licenseNum: "101", licenseDate: "2024-01-10", name: "مجمع تجاري سكني متكامل", sector: "سكني تجاري", investor: "شركة الأفق الاستثمارية", consultant: "المكتب الهندسي الاستشاري", cost: 5000000000, location: "المركز", plotNum: "12/4", area: "5000 م2", duration: "3 سنوات", contractWith: "هيئة استثمار الديوانية", actualStart: "2024-03-01", commercialOp: "2027-01-01", ownerEntity: "بلدية الديوانية", status: "قيد التنفيذ", progress: 45, valuation: "جيد", valuationAmount: 200000000 },
-            { id: 2, licenseNum: "102", licenseDate: "2023-05-12", name: "مستشفى التخصصي الأهلي", sector: "صحي", investor: "مجموعة الشفاء", consultant: "مكتب بابل الهندسي", cost: 12000000000, location: "حي الحسين", plotNum: "45/1", area: "10000 م2", duration: "4 سنوات", contractWith: "دائرة صحة القادسية", actualStart: "2023-08-01", commercialOp: "2026-10-01", ownerEntity: "دائرة الصحة", status: "تشغيل تجاري", progress: 95, valuation: "ممتاز", valuationAmount: 500000000 }
-        ];
 
         function tryLoginSecure() {
-            const roleSelect = document.getElementById('loginRoleSelect').value;
-            currentUserRole = roleSelect;
+            currentUserRole = document.getElementById('loginRoleSelect').value;
             document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('userRoleText').textContent = currentUserRole === 'admin' ? "صلاحية: أدمن (Admin)" : "صلاحية: مستخدم (User)";
+            if(currentUserRole !== 'admin') {
+                document.getElementById('adminLblImport').style.display = 'none';
+            }
             initApp();
         }
 
-        function logoutSystem() {
-            location.reload();
-        }
-
         function initApp() {
-            const roleBadge = document.getElementById('userRoleText');
-            if (currentUserRole === 'admin') {
-                roleBadge.textContent = "صلاحية: مدير النظام (Admin) 🛡️";
-                document.getElementById('adminBtnAdd').style.display = 'flex';
-                document.getElementById('adminBtnExcel').style.display = 'flex';
-                document.getElementById('adminLblImport').style.display = 'flex';
-                document.getElementById('adminBtnPrint').style.display = 'flex';
-            } else {
-                roleBadge.textContent = "صلاحية: مستخدم (User - تصفح فقط) 👁️";
-                document.getElementById('adminBtnAdd').style.display = 'none';
-                document.getElementById('adminBtnExcel').style.display = 'none'; 
-                document.getElementById('adminLblImport').style.display = 'none';
-                document.getElementById('adminBtnPrint').style.display = 'none'; 
-            }
-
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-            document.getElementById('currentDateDisplay').innerHTML = `<i class="fa-regular fa-calendar-days ml-1 text-yellow-400"></i> ${now.toLocaleDateString('ar-IQ', options)}`;
-            const printDateEl = document.getElementById('printDateSpan');
-            if(printDateEl) printDateEl.textContent = now.toLocaleDateString('ar-IQ');
-
-            // جلب البيانات من السحاب وتعبئتها تلقائياً دون الحاجة لاستيراد
             db.ref('projects').on('value', (snapshot) => {
                 const val = snapshot.val();
                 if (val && Array.isArray(val) && val.length > 0) {
                     projects = val;
+                } else if (val && typeof val === 'object') {
+                    projects = Object.values(val);
                 } else {
-                    // إذا لم توجد بيانات في قاعدة البيانات، يتم رفع البيانات الافتراضية سحابياً وعرضها فوراً
-                    db.ref('projects').set(defaultProjects);
-                    projects = defaultProjects;
+                    projects = [];
                 }
-                populateDynamicFilters();
-                filterTable();
+                renderTable(projects);
             });
         }
 
@@ -546,214 +175,98 @@
             db.ref('projects').set(projects);
         }
 
-        function toggleTVMode() {
-            const body = document.getElementById('mainBody');
-            body.classList.toggle('tv-mode-active');
-            const isTv = body.classList.contains('tv-mode-active');
-            document.getElementById('tvModeBtn').innerHTML = isTv ? `<i class="fa-solid fa-desktop"></i> الوضع العادي` : `<i class="fa-solid fa-tv"></i> وضع الشاشة`;
-        }
+        // دالة القراءة الذكية الحقيقية التي تحلل رؤوس الأعمدة تلقائياً
+        function importFromExcelSmart(e) {
+            if (currentUserRole !== 'admin') return;
+            const file = e.target.files[0];
+            if (!file) return;
 
-        function getNumericProgress(val) {
-            if (val === undefined || val === null || val === '') return 0;
-            if (typeof val === 'number') return val > 1 ? Number(val.toFixed(1)) : Number((val * 100).toFixed(1));
-            let str = String(val).replace('%', '').trim();
-            let num = Number(str);
-            if (isNaN(num)) return 0;
-            return num > 1 ? Number(num.toFixed(1)) : Number((num * 100).toFixed(1));
-        }
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    // تحويل الشيت إلى قائمة كائنات بناءً على العناوين المسجلة بأعلى الجدول
+                    const jsonObjects = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
-        function formatDate(dVal) {
-            if (!dVal) return '';
-            let str = String(dVal).trim();
-            if (str.includes('T')) str = str.split('T')[0];
-            
-            let num = Number(str);
-            if (!isNaN(num) && num > 30000 && num < 60000) {
-                const excelDate = new Date(Math.round((num - (25567 + 2)) * 86400 * 1000));
-                if (!isNaN(excelDate.getTime())) {
-                    let y = excelDate.getFullYear();
-                    let m = String(excelDate.getMonth() + 1).padStart(2, '0');
-                    let d = String(excelDate.getDate()).padStart(2, '0');
-                    return `${y}-${m}-${d}`;
+                    if (!jsonObjects || jsonObjects.length === 0) {
+                        alert('تنبيه: الملف فارغ أو تعذر العثور على أسطر بيانات.');
+                        return;
+                    }
+
+                    let imported = [];
+                    jsonObjects.forEach((item, idx) => {
+                        // دالة للبحث عن المسمى المناسب بغض النظر عن طريقة كتابة العنوان في الإكسل
+                        const getValByKeys = (keys) => {
+                            for (let key of Object.keys(item)) {
+                                const cleanKey = key.trim().toLowerCase();
+                                if (keys.some(k => cleanKey.includes(k))) {
+                                    return item[key];
+                                }
+                            }
+                            return '';
+                        };
+
+                        const licenseNum = getValByKeys(['إجازة', 'اجازة', 'رقم الاجازة', 'رقم الإجازة', 'license']);
+                        const name = getValByKeys(['اسم المشروع', 'المشروع', 'اسم', 'name', 'project']);
+                        const sector = getValByKeys(['قطاع', 'القطاع', 'sector']);
+                        const investor = getValByKeys(['مستثمر', 'المستثمر', 'شركة', 'الشركة', 'investor']);
+                        const consultant = getValByKeys(['مكتب', 'استشاري', 'المكتب الاستشاري', 'consultant']);
+                        const cost = getValByKeys(['كلفة', 'الكلفة', 'كلفة المشروع', 'cost']);
+                        const location = getValByKeys(['موقع', 'الموقع', 'location']);
+                        const plotNum = getValByKeys(['قطعة', 'رقم القطعة', 'plot']);
+                        const area = getValByKeys(['مساحة', 'المساحة', 'area']);
+                        const duration = getValByKeys(['مدة', 'المدة', 'duration']);
+                        const contractWith = getValByKeys(['تعاقد', 'التعاقد', 'contract']);
+                        const actualStart = getValByKeys(['مباشرة', 'المباشرة', 'start']);
+                        const commercialOp = getValByKeys(['تشغيل', 'التشغيل', 'op']);
+                        const ownerEntity = getValByKeys(['مالكة', 'الجهة المالكة', 'owner']);
+                        const status = getValByKeys(['حالة', 'الحالة', 'status']);
+                        const progress = getValByKeys(['نسبة', 'إنجاز', 'انجاز', 'progress']);
+                        const valuation = getValByKeys(['تثمين', 'التثمين']);
+                        const valuationAmount = getValByKeys(['مقدار التثمين', 'مبلغ التثمين']);
+
+                        // إضافة الصف فقط إذا كان يحتوي على اسم مشروع أو رقم إجازة
+                        if (name || licenseNum) {
+                            imported.push({
+                                id: idx + 1,
+                                licenseNum: String(licenseNum || '-').trim(),
+                                licenseDate: getValByKeys(['تاريخ', 'الإصدار', 'date']) || '-',
+                                name: String(name || 'مشروع استثماري').trim(),
+                                sector: String(sector || 'عام').trim(),
+                                investor: String(investor || '-').trim(),
+                                consultant: String(consultant || '-').trim(),
+                                cost: Number(String(cost).replace(/,/g, '')) || 0,
+                                location: String(location || '-').trim(),
+                                plotNum: String(plotNum || '-').trim(),
+                                area: String(area || '-').trim(),
+                                duration: String(duration || '-').trim(),
+                                contractWith: String(contractWith || '-').trim(),
+                                actualStart: String(actualStart || '-').trim(),
+                                commercialOp: String(commercialOp || '-').trim(),
+                                ownerEntity: String(ownerEntity || '-').trim(),
+                                status: String(status || 'قيد التنفيذ').trim(),
+                                progress: Number(String(progress).replace('%', '')) || 0,
+                                valuation: String(valuation || '-').trim(),
+                                valuationAmount: Number(String(valuationAmount).replace(/,/g, '')) || 0
+                            });
+                        }
+                    });
+
+                    if (imported.length > 0) {
+                        projects = imported;
+                        syncToCloud();
+                        alert(`نجح الاستيراد الذكي! تم تحليل وقراءة ${projects.length} مشروعاً ورفعها إلى السحاب بنجاح.`);
+                    } else {
+                        alert('لم يتم العثور على حقول مطابقة تلقائياً. يرجى التأكد من أن الصف الأول في الإكسل يحتوي على عناوين الأعمدة.');
+                    }
+                } catch (err) { 
+                    console.error(err);
+                    alert('حدث خطأ في معالجة ملف الإكسل.'); 
                 }
-            }
-            return str;
-        }
-
-        function standardizeStatus(statusStr) {
-            if (!statusStr) return 'قيد التنفيذ';
-            let s = String(statusStr).trim();
-            if (allowedStatuses.includes(s)) return s;
-            if (s.includes('تجاري')) return 'تشغيل تجاري';
-            if (s.includes('متأخر')) return 'يعمل ومتأخر';
-            if (s.includes('منجز')) return 'منجز';
-            if (s.includes('متوقف')) return 'متوقف';
-            return 'قيد التنفيذ';
-        }
-
-        function getStatusBadgeStyle(status) {
-            const st = standardizeStatus(status);
-            switch(st) {
-                case 'تشغيل تجاري': return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-                case 'منجز': return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-                case 'قيد التنفيذ': return 'bg-blue-100 text-blue-800 border border-blue-300';
-                case 'يعمل ومتأخر': return 'bg-purple-100 text-purple-800 border border-purple-300';
-                case 'لم يباشر': return 'bg-amber-100 text-amber-800 border border-amber-300';
-                case 'متوقف': return 'bg-red-100 text-red-800 border border-red-300';
-                case 'اجازة مسحوبه': return 'bg-gray-200 text-gray-800 border border-gray-400';
-                default: return 'bg-blue-100 text-blue-800 border border-blue-300';
-            }
-        }
-
-        function getProgressBarStyle(prog) {
-            if (prog >= 90) return { barColor: 'bg-emerald-600', textColor: 'text-emerald-700' };
-            if (prog >= 50) return { barColor: 'bg-blue-600', textColor: 'text-blue-700' };
-            if (prog >= 20) return { barColor: 'bg-amber-500', textColor: 'text-amber-700' };
-            return { barColor: 'bg-rose-600', textColor: 'text-rose-700' };
-        }
-
-        function isProjectDelayed(p) {
-            const st = standardizeStatus(p.status);
-            const prog = getNumericProgress(p.progress);
-            if (st === 'يعمل ومتأخر' || st === 'متوقف') return true;
-            if (st === 'قيد التنفيذ' && prog < 20) return true;
-            return false;
-        }
-
-        function openAIAnalysisModal() {
-            const total = projects.length;
-            const delayedCount = projects.filter(p => isProjectDelayed(p)).length;
-            const riskRate = total > 0 ? ((delayedCount / total) * 100).toFixed(1) : 0;
-            const avgProg = total > 0 ? (projects.reduce((acc, p) => acc + getNumericProgress(p.progress), 0) / total) : 0;
-            const efficiency = (avgProg / 10).toFixed(1);
-
-            document.getElementById('aiRiskIndexVal').textContent = riskRate + '%';
-            document.getElementById('aiEfficiencyVal').textContent = efficiency + ' / 10';
-
-            let recText = "الأداء الاستثماري العام مستقر وضمن الحدود الطبيعية لمؤشرات الإنجاز.";
-            if (riskRate > 30) {
-                recText = "تنبيه ذكي: نسبة مخاطر التعثر مرتفعة نسبياً، يُنصح بتشكيل لجنة متابعة ميدانية عاجلة للمشاريع المتأخرة وتذليل العقبات الإدارية.";
-            } else if (efficiency > 7) {
-                recText = "أداء ممتاز: معامل الكفاءة الاستثمارية عالٍ، وعدد المشاريع المنجزة والعاملة يسير وفق الجدول الزمني المخطط.";
-            }
-            document.getElementById('aiRecommendationVal').textContent = recText;
-
-            const delayedListEl = document.getElementById('aiDelayedList');
-            delayedListEl.innerHTML = '';
-            const delayedProjects = projects.filter(p => isProjectDelayed(p));
-            if (delayedProjects.length === 0) {
-                delayedListEl.innerHTML = '<p class="text-emerald-700 font-semibold">لا توجد مشاريع مصنفة ضمن دائرة التعثر حالياً.</p>';
-            } else {
-                delayedProjects.forEach(p => {
-                    const row = document.createElement('div');
-                    row.className = "flex justify-between items-center bg-white p-2 rounded border border-rose-100 text-xs";
-                    row.innerHTML = `<span><b>${p.name}</b> (${p.sector || 'عام'})</span><span class="text-rose-600 font-bold font-mono">إنجاز: ${getNumericProgress(p.progress)}% | الحالة: ${standardizeStatus(p.status)}</span>`;
-                    delayedListEl.appendChild(row);
-                });
-            }
-
-            document.getElementById('aiAnalysisModal').classList.remove('hidden');
-        }
-
-        function openExecutiveSummary() {
-            const total = projects.length;
-            const totalCost = projects.reduce((acc, p) => acc + Number(p.cost || 0), 0);
-            const totalVal = projects.reduce((acc, p) => acc + Number(p.valuationAmount || 0), 0);
-            const avgProg = total > 0 ? (projects.reduce((acc, p) => acc + getNumericProgress(p.progress), 0) / total).toFixed(1) : 0;
-            
-            const contentEl = document.getElementById('executiveSummaryContent');
-            contentEl.innerHTML = `
-                <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-xl mb-3">
-                    <h4 class="font-bold text-indigo-950 mb-1"><i class="fa-solid fa-chart-pie ml-1"></i> الموقف التلخيصي العام</h4>
-                    <p class="text-gray-700 leading-relaxed">تتابع منظومة الشامل (هيئة استثمار الديوانية) إجمالي <b>${total} مشروعاً استثمارياً مجازاً</b> بكلف استثمارية إجمالية بلغت <b>${totalCost.toLocaleString()} دينار عراقي</b>، وبلغ إجمالي مبالغ التثمين <b>${totalVal.toLocaleString()} دينار عراقي</b>.</p>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div class="bg-gray-50 p-3 rounded-xl border">
-                        <span class="text-gray-500 block text-[10px]">متوسط نسبة الإنجاز العام</span>
-                        <b class="text-indigo-900 text-base font-mono">${avgProg}%</b>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border">
-                        <span class="text-gray-500 block text-[10px]">عدد القطاعات الاستثمارية النشطة</span>
-                        <b class="text-indigo-900 text-base font-mono">${[...new Set(projects.map(p => p.sector))].length} قطاع</b>
-                    </div>
-                </div>
-                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
-                    <h4 class="font-bold text-emerald-950 mb-1"><i class="fa-solid fa-circle-check ml-1"></i> الخلاصة والتوصيات الاستراتيجية</h4>
-                    <p class="text-emerald-900 leading-relaxed">المنظومة تعمل بكفاءة عالية وفق بيئة التحول الرقمي السحابي، مع تكامل تام لكافة البيانات الحقلية والمكانية والمالية، مما يضمن اتخاذ القرار الاستثماري السليم بدقة وموضوعية عالية.</p>
-                </div>
-            `;
-            document.getElementById('executiveSummaryModal').classList.remove('hidden');
-        }
-
-        function populateDynamicFilters() {
-            fillSelect('filterSector', [...new Set(projects.map(p => p.sector).filter(Boolean))], 'كل القطاعات');
-            fillSelect('filterStatus', allowedStatuses, 'كل الحالات');
-            fillSelect('filterOwner', [...new Set(projects.map(p => p.ownerEntity).filter(Boolean))], 'كل الجهات المالكة');
-            fillSelect('filterValuation', [...new Set(projects.map(p => p.valuation).filter(Boolean))], 'كل التثمين');
-        }
-
-        function fillSelect(elementId, items, defaultText) {
-            const el = document.getElementById(elementId);
-            const currentVal = el.value;
-            el.innerHTML = `<option value="">${defaultText}</option>`;
-            items.forEach(item => {
-                const opt = document.createElement('option');
-                opt.value = item;
-                opt.textContent = item;
-                el.appendChild(opt);
-            });
-            el.value = currentVal;
-        }
-
-        function applyQuickFilter(statusKey) {
-            currentQuickFilter = statusKey;
-            
-            document.querySelectorAll('.q-pill').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-            });
-            const activeBtn = document.getElementById('pill-' + statusKey);
-            if(activeBtn) {
-                activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
-                activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
-            }
-
-            if (statusKey === 'delayed_risk') {
-                document.getElementById('filterStatus').value = '';
-            } else if (statusKey !== 'all') {
-                document.getElementById('filterStatus').value = statusKey;
-            } else {
-                document.getElementById('filterStatus').value = '';
-            }
-            filterTable();
-        }
-
-        function filterTable() {
-            const search = document.getElementById('searchInput').value.toLowerCase().trim();
-            const sector = document.getElementById('filterSector').value;
-            const status = document.getElementById('filterStatus').value;
-            const owner = document.getElementById('filterOwner').value;
-            const valuation = document.getElementById('filterValuation').value;
-
-            const filtered = projects.filter(p => {
-                const matchSearch = !search || 
-                    (p.name && String(p.name).toLowerCase().includes(search)) ||
-                    (p.investor && String(p.investor).toLowerCase().includes(search)) ||
-                    (p.licenseNum && String(p.licenseNum).toLowerCase().includes(search));
-                const matchSector = sector === '' || p.sector === sector;
-                let matchStatus = true;
-                if (currentQuickFilter === 'delayed_risk') {
-                    matchStatus = isProjectDelayed(p);
-                } else if (status !== '') {
-                    matchStatus = standardizeStatus(p.status) === standardizeStatus(status);
-                }
-                const matchOwner = owner === '' || p.ownerEntity === owner;
-                const matchValuation = valuation === '' || p.valuation === valuation;
-                return matchSearch && matchSector && matchStatus && matchOwner && matchValuation;
-            });
-
-            renderTable(filtered);
-            updateStatistics(filtered);
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         function renderTable(data) {
@@ -761,306 +274,47 @@
             tbody.innerHTML = '';
             document.getElementById('tableCount').textContent = `${data.length} مشروع`;
 
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="21" class="text-center p-4 text-gray-500 font-bold">لا توجد بيانات حالياً في قاعدة البيانات السحابية. قم بالاستيراد بصلاحية الأدمن.</td></tr>`;
+                return;
+            }
+
             data.forEach((p, index) => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50/50 transition cursor-pointer";
-                let actionsHtml = `<span class="text-gray-400 text-[10px]">للتصفح فقط</span>`;
-                if (currentUserRole === 'admin') {
-                    actionsHtml = `
-                        <button onclick="editProject(${p.id})" class="text-blue-600 hover:text-blue-800 mx-1" title="تعديل"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteProject(${p.id})" class="text-red-600 hover:text-red-800 mx-1" title="حذف"><i class="fa-solid fa-trash-can"></i></button>
-                    `;
-                }
-
-                const currentStatus = standardizeStatus(p.status);
-                const badgeStyle = getStatusBadgeStyle(currentStatus);
-                const progVal = getNumericProgress(p.progress);
-                const progStyle = getProgressBarStyle(progVal);
-
+                tr.className = "hover:bg-blue-50 transition";
                 tr.innerHTML = `
-                    <td class="p-2 text-center whitespace-nowrap">${index + 1}</td>
-                    <td class="p-2 font-semibold whitespace-nowrap font-mono">${p.licenseNum || '-'}</td>
-                    <td class="p-2 whitespace-nowrap font-mono">${formatDate(p.licenseDate) || '-'}</td>
-                    <td class="p-2 font-bold text-gray-900" onclick="openProject360Modal(${p.id})"><i class="fa-solid fa-eye ml-1 text-xs text-blue-500"></i> ${p.name || '-'}</td>
-                    <td class="p-2 whitespace-nowrap"><span class="bg-gray-100 px-1.5 py-0.5 rounded">${p.sector || '-'}</span></td>
+                    <td class="p-2 text-center font-bold">${index + 1}</td>
+                    <td class="p-2 font-mono">${p.licenseNum || '-'}</td>
+                    <td class="p-2 whitespace-nowrap">${p.licenseDate || '-'}</td>
+                    <td class="p-2 font-bold text-blue-900">${p.name || '-'}</td>
+                    <td class="p-2 whitespace-nowrap">${p.sector || '-'}</td>
                     <td class="p-2">${p.investor || '-'}</td>
                     <td class="p-2">${p.consultant || '-'}</td>
-                    <td class="p-2 font-mono whitespace-nowrap text-emerald-700">${Number(p.cost || 0).toLocaleString()}</td>
+                    <td class="p-2 font-mono text-emerald-700 font-bold">${Number(p.cost || 0).toLocaleString()}</td>
                     <td class="p-2 whitespace-nowrap">${p.location || '-'}</td>
-                    <td class="p-2 whitespace-nowrap font-mono text-center">${p.plotNum || '-'}</td>
-                    <td class="p-2 whitespace-nowrap font-mono text-center">${p.area || '-'}</td>
+                    <td class="p-2 text-center font-mono">${p.plotNum || '-'}</td>
+                    <td class="p-2 text-center font-mono">${p.area || '-'}</td>
                     <td class="p-2 whitespace-nowrap">${p.duration || '-'}</td>
                     <td class="p-2">${p.contractWith || '-'}</td>
-                    <td class="p-2 whitespace-nowrap font-mono">${formatDate(p.actualStart) || '-'}</td>
-                    <td class="p-2 whitespace-nowrap font-mono">${formatDate(p.commercialOp) || '-'}</td>
+                    <td class="p-2 whitespace-nowrap">${p.actualStart || '-'}</td>
+                    <td class="p-2 whitespace-nowrap">${p.commercialOp || '-'}</td>
                     <td class="p-2 whitespace-nowrap">${p.ownerEntity || '-'}</td>
-                    <td class="p-2 whitespace-nowrap"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeStyle}">${currentStatus}</span></td>
-                    <td class="p-2 align-middle whitespace-nowrap">
-                        <div class="flex items-center gap-1.5">
-                            <span class="font-mono font-bold text-[11px] w-9 text-left ${progStyle.textColor}">${progVal}%</span>
-                            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden shadow-inner"><div class="${progStyle.barColor} h-2 rounded-full transition-all duration-500" style="width: ${progVal}%"></div></div>
-                        </div>
-                    </td>
+                    <td class="p-2 whitespace-nowrap"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">${p.status || '-'}</span></td>
+                    <td class="p-2 text-center font-bold font-mono text-indigo-700">${p.progress || 0}%</td>
                     <td class="p-2 whitespace-nowrap">${p.valuation || '-'}</td>
-                    <td class="p-2 font-mono whitespace-nowrap text-purple-700">${Number(p.valuationAmount || 0).toLocaleString()}</td>
-                    <td class="p-2 text-center whitespace-nowrap" onclick="event.stopPropagation()">${actionsHtml}</td>
+                    <td class="p-2 font-mono text-purple-700 font-bold">${Number(p.valuationAmount || 0).toLocaleString()}</td>
+                    <td class="p-2 text-center">${currentUserRole === 'admin' ? '<button onclick="deleteProject(' + p.id + ')" class="text-red-600 font-bold hover:underline">حذف</button>' : '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function openProject360Modal(id) {
-            const p = projects.find(item => item.id === id);
-            if (!p) return;
-            document.getElementById('m360License').textContent = `رقم الإجازة: ${p.licenseNum || '-'}`;
-            document.getElementById('m360Name').textContent = p.name;
-            document.getElementById('m360Investor').textContent = `المستثمر: ${p.investor || '-'}`;
-            document.getElementById('m360Sector').textContent = p.sector || '-';
-            document.getElementById('m360Cost').textContent = `${Number(p.cost || 0).toLocaleString()} د.ع`;
-            document.getElementById('m360Status').textContent = standardizeStatus(p.status);
-            document.getElementById('m360Progress').textContent = `${getNumericProgress(p.progress)}%`;
-            document.getElementById('m360Loc').textContent = p.location || '-';
-            document.getElementById('m360Plot').textContent = p.plotNum || '-';
-            document.getElementById('m360Area').textContent = p.area || '-';
-            document.getElementById('m360Owner').textContent = p.ownerEntity || '-';
-            document.getElementById('m360Contract').textContent = p.contractWith || '-';
-            document.getElementById('m360Consultant').textContent = p.consultant || '-';
-            document.getElementById('m360Valuation').textContent = p.valuation || '-';
-            document.getElementById('m360ValuationAmt').textContent = `${Number(p.valuationAmount || 0).toLocaleString()} د.ع`;
-            document.getElementById('project360Modal').classList.remove('hidden');
-        }
-
-        function updateStatistics(data) {
-            const totalProjects = data.length;
-            const totalCost = data.reduce((sum, p) => sum + Number(p.cost || 0), 0);
-            const totalValuation = data.reduce((sum, p) => sum + Number(p.valuationAmount || 0), 0);
-            const avgProgress = totalProjects > 0 ? (data.reduce((sum, p) => sum + getNumericProgress(p.progress), 0) / totalProjects) : 0;
-
-            document.getElementById('statTotalProjects').textContent = totalProjects.toLocaleString();
-            document.getElementById('statTotalCost').textContent = totalCost.toLocaleString() + ' د.ع';
-            document.getElementById('statTotalValuation').textContent = totalValuation.toLocaleString() + ' د.ع';
-            document.getElementById('statAvgProgress').textContent = avgProgress.toFixed(1) + '%';
-            document.getElementById('statHealthGaugeVal').textContent = avgProgress.toFixed(1) + '%';
-
-            updateSectorStatsSummary(data);
-            updateCharts(data);
-        }
-
-        function updateSectorStatsSummary(data) {
-            const sectorContainer = document.getElementById('sectorStatsContainer');
-            sectorContainer.innerHTML = '';
-            const sectorSummary = {};
-            data.forEach(p => {
-                let sec = p.sector ? p.sector.trim() : 'غير محدد';
-                if (!sectorSummary[sec]) sectorSummary[sec] = { count: 0, cost: 0 };
-                sectorSummary[sec].count++;
-                sectorSummary[sec].cost += Number(p.cost || 0);
-            });
-            Object.keys(sectorSummary).forEach(sec => {
-                const info = sectorSummary[sec];
-                const card = document.createElement('div');
-                card.className = "bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-2 shadow-sm cursor-pointer hover:border-blue-500 transition";
-                card.onclick = () => { document.getElementById('filterSector').value = sec; filterTable(); };
-                card.innerHTML = `
-                    <h4 class="font-bold text-blue-900 text-[10px] mb-1 truncate"><i class="fa-solid fa-layer-group text-blue-600 ml-1"></i> ${sec}</h4>
-                    <div class="flex justify-between text-[9px] text-gray-700"><span>العدد:</span><b class="text-blue-950">${info.count}</b></div>
-                    <div class="flex justify-between text-[9px] text-gray-700"><span>الكلفة:</span><b class="text-emerald-700 font-mono">${info.cost.toLocaleString()}</b></div>
-                `;
-                sectorContainer.appendChild(card);
-            });
-        }
-
-        function updateCharts(data) {
-            const statusMap = { 'قيد التنفيذ': 0, 'تشغيل تجاري': 0, 'يعمل ومتأخر': 0, 'منجز': 0, 'لم يباشر': 0, 'متوقف': 0, 'اجازة مسحوبه': 0 };
-            data.forEach(p => { let st = standardizeStatus(p.status); if (statusMap.hasOwnProperty(st)) statusMap[st]++; });
-            const sectorMap = {};
-            data.forEach(p => { let sec = p.sector ? p.sector.trim() : 'غير محدد'; sectorMap[sec] = (sectorMap[sec] || 0) + 1; });
-
-            if (statusChartInstance) statusChartInstance.destroy();
-            statusChartInstance = new Chart(document.getElementById('statusChart').getContext('2d'), {
-                type: 'doughnut',
-                data: { labels: Object.keys(statusMap), datasets: [{ data: Object.values(statusMap), backgroundColor: statusColorsList }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { display: false } } }
-            });
-
-            const legendContainer = document.getElementById('customStatusLegend');
-            legendContainer.innerHTML = '';
-            Object.keys(statusMap).forEach((stKey, i) => {
-                const item = document.createElement('div');
-                item.className = "flex items-center gap-1.5 text-gray-700 font-medium cursor-pointer hover:underline";
-                item.onclick = () => { document.getElementById('filterStatus').value = stKey; filterTable(); };
-                item.innerHTML = `<span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: ${statusColorsList[i]}"></span><span>${stKey}: <b class="font-bold">${statusMap[stKey]}</b></span>`;
-                legendContainer.appendChild(item);
-            });
-
-            if (sectorChartInstance) sectorChartInstance.destroy();
-            sectorChartInstance = new Chart(document.getElementById('sectorChart').getContext('2d'), {
-                type: 'bar',
-                data: { labels: Object.keys(sectorMap), datasets: [{ data: Object.values(sectorMap), backgroundColor: '#1d4ed8' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        }
-
-        function openAddProjectModal() {
-            if (currentUserRole !== 'admin') return;
-            document.getElementById('modalTitle').innerText = 'إضافة مشروع استثماري جديد';
-            document.getElementById('projectForm').reset();
-            document.getElementById('projectId').value = '';
-            document.getElementById('projectModal').classList.remove('hidden');
-        }
-
-        function closeModal() { document.getElementById('projectModal').classList.add('hidden'); }
-
-        function saveProject(e) {
-            e.preventDefault();
-            if (currentUserRole !== 'admin') return;
-            const id = document.getElementById('projectId').value;
-            const formData = {
-                id: id ? Number(id) : (projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1),
-                licenseNum: document.getElementById('pLicenseNum').value,
-                licenseDate: document.getElementById('pLicenseDate').value,
-                name: document.getElementById('pName').value,
-                sector: document.getElementById('pSector').value,
-                investor: document.getElementById('pInvestor').value,
-                consultant: document.getElementById('pConsultant').value,
-                cost: Number(document.getElementById('pCost').value),
-                location: document.getElementById('pLocation').value,
-                plotNum: document.getElementById('pPlotNum').value,
-                area: document.getElementById('pArea').value,
-                duration: document.getElementById('pDuration').value,
-                contractWith: document.getElementById('pContractWith').value,
-                actualStart: document.getElementById('pActualStart').value,
-                commercialOp: document.getElementById('pCommercialOp').value,
-                ownerEntity: document.getElementById('pOwnerEntity').value,
-                status: standardizeStatus(document.getElementById('pStatus').value),
-                progress: getNumericProgress(document.getElementById('pProgress').value),
-                valuation: document.getElementById('pValuation').value,
-                valuationAmount: Number(document.getElementById('pValuationAmount').value)
-            };
-            if (id) {
-                const index = projects.findIndex(p => p.id == id);
-                if (index !== -1) projects[index] = formData;
-            } else {
-                projects.push(formData);
-            }
-            syncToCloud();
-            closeModal();
-        }
-
-        function editProject(id) {
-            if (currentUserRole !== 'admin') return;
-            const p = projects.find(item => item.id === id);
-            if (!p) return;
-            document.getElementById('modalTitle').innerText = 'تعديل بيانات المشروع';
-            document.getElementById('projectId').value = p.id;
-            document.getElementById('pLicenseNum').value = p.licenseNum || '';
-            document.getElementById('pLicenseDate').value = formatDate(p.licenseDate) || '';
-            document.getElementById('pName').value = p.name;
-            document.getElementById('pSector').value = p.sector;
-            document.getElementById('pInvestor').value = p.investor;
-            document.getElementById('pConsultant').value = p.consultant || '';
-            document.getElementById('pCost').value = p.cost;
-            document.getElementById('pLocation').value = p.location || '';
-            document.getElementById('pPlotNum').value = p.plotNum || '';
-            document.getElementById('pArea').value = p.area || '';
-            document.getElementById('pDuration').value = p.duration || '';
-            document.getElementById('pContractWith').value = p.contractWith || '';
-            document.getElementById('pActualStart').value = formatDate(p.actualStart) || '';
-            document.getElementById('pCommercialOp').value = formatDate(p.commercialOp) || '';
-            document.getElementById('pOwnerEntity').value = p.ownerEntity || '';
-            document.getElementById('pStatus').value = standardizeStatus(p.status);
-            document.getElementById('pProgress').value = getNumericProgress(p.progress);
-            document.getElementById('pValuation').value = p.valuation || '';
-            document.getElementById('pValuationAmount').value = p.valuationAmount || 0;
-            document.getElementById('projectModal').classList.remove('hidden');
-        }
-
         function deleteProject(id) {
             if (currentUserRole !== 'admin') return;
-            if (confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
+            if (confirm('هل أنت متأكد من الحذف؟')) {
                 projects = projects.filter(item => item.id !== id);
                 syncToCloud();
             }
-        }
-
-        function exportToExcel() {
-            if (currentUserRole !== 'admin') return;
-            const wsData = [["ت", "رقم الإجازة", "تاريخ الإصدار", "اسم المشروع", "القطاع", "المستثمر", "المكتب الاستشاري", "الكلفة", "الموقع", "رقم القطعة", "المساحة", "مدة التنفيذ", "التعاقد مع", "المباشرة الفعلية", "التشغيل التجاري", "الجهة المالكة", "حالة المشروع", "الإنجاز", "التثمين", "مقدار التثمين"]];
-            projects.forEach((p, i) => {
-                wsData.push([i+1, p.licenseNum, formatDate(p.licenseDate), p.name, p.sector, p.investor, p.consultant, p.cost, p.location, p.plotNum, p.area, p.duration, p.contractWith, formatDate(p.actualStart), formatDate(p.commercialOp), p.ownerEntity, standardizeStatus(p.status), getNumericProgress(p.progress)+'%', p.valuation || '', p.valuationAmount || 0]);
-            });
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "المشاريع");
-            XLSX.writeFile(wb, "AlShamel_Report_Pro.xlsx");
-        }
-
-        function printStatisticalReport() { 
-            if (currentUserRole !== 'admin') return;
-            window.print(); 
-        }
-
-        function importFromExcel(e) {
-            if (currentUserRole !== 'admin') return;
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-                    
-                    let imported = [];
-                    json.forEach((row, idx) => {
-                        if (idx > 0 && row.some(cell => String(cell).trim() !== '')) {
-                            const valNum = (colIdx) => {
-                                if (row[colIdx] === undefined || row[colIdx] === '') return 0;
-                                let n = Number(String(row[colIdx]).replace(/,/g, '').trim());
-                                return isNaN(n) ? 0 : n;
-                            };
-
-                            let nameVal = String(row[3] || row[2] || row[1] || '').trim();
-                            if (nameVal && nameVal !== 'اسم المشروع' && nameVal !== 'المشروع') {
-                                imported.push({
-                                    id: imported.length + 1,
-                                    licenseNum: String(row[1] || row[0] || '').trim(),
-                                    licenseDate: formatDate(row[2] || ''),
-                                    name: nameVal,
-                                    sector: String(row[4] || 'عام').trim(),
-                                    investor: String(row[5] || '').trim(),
-                                    consultant: String(row[6] || '').trim(),
-                                    cost: valNum(7),
-                                    location: String(row[8] || '').trim(),
-                                    plotNum: String(row[9] || '').trim(),
-                                    area: String(row[10] || '').trim(),
-                                    duration: String(row[11] || '').trim(),
-                                    contractWith: String(row[12] || '').trim(),
-                                    actualStart: formatDate(row[13] || ''),
-                                    commercialOp: formatDate(row[14] || ''),
-                                    ownerEntity: String(row[15] || '').trim(),
-                                    status: standardizeStatus(row[16] || 'قيد التنفيذ'),
-                                    progress: getNumericProgress(row[17] || 0),
-                                    valuation: String(row[18] || '').trim(),
-                                    valuationAmount: valNum(19)
-                                });
-                            }
-                        }
-                    });
-
-                    if (imported.length > 0) {
-                        projects = imported;
-                        syncToCloud();
-                        alert(`تم استيراد ${projects.length} مشروعاً وتنسيق تواريخها ورفعها للسحاب بنجاح تام!`);
-                    } else {
-                        alert('تنبيه: لم يتم العثور على صفوف بيانات صالحة.');
-                    }
-                } catch (err) { 
-                    console.error(err);
-                    alert('خطأ في استيراد ملف الإكسل.'); 
-                }
-            };
-            reader.readAsArrayBuffer(file);
         }
     </script>
 </body>
