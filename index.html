@@ -82,8 +82,8 @@
                 <div>
                     <label class="block font-semibold mb-1 text-gray-700">اختر صفة الدخول للنظام</label>
                     <select id="loginRoleSelect" onchange="toggleAdminLoginFields()" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-blue-950">
-                        <option value="user">مستخدم عادي (تصفح واستعلام ومؤشرات - بدون تعديل)</option>
-                        <option value="admin">مدير النظام (أدمن - صلاحيات كاملة وإدارة المشاريع)</option>
+                        <option value="user">مستخدم النظام</option>
+                        <option value="admin">مدير النظام (د. خالد محمد الخفاجي)</option>
                     </select>
                 </div>
 
@@ -488,4 +488,205 @@
             storageBucket: "dic-alshamel.firebasestorage.app",
             messagingSenderId: "562109253392",
             appId: "1:562109253392:web:793b03d1be47bf4f330795",
-            measurementId: "
+            measurementId: "G-BJCNY1N7PY"
+        };
+
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch(e) {
+            console.error("Firebase init error:", e);
+        }
+
+        let projects = [];
+        let currentUserRole = null; 
+        let statusChartInstance = null;
+        let sectorChartInstance = null;
+        let currentQuickFilter = 'all';
+
+        const allowedStatuses = ["قيد التنفيذ", "تشغيل تجاري", "يعمل ومتأخر", "منجز", "لم يباشر", "متوقف", "اجازة مسحوبه"];
+        const statusColorsList = ['#3b82f6', '#10b981', '#8b5cf6', '#eab308', '#f59e0b', '#ef4444', '#6b7280'];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            if(submitBtn) {
+                submitBtn.addEventListener('click', tryLoginSecure);
+            }
+        });
+
+        function toggleAdminLoginFields() {
+            const role = document.getElementById('loginRoleSelect').value;
+            const adminFields = document.getElementById('adminAuthFields');
+            const errEl = document.getElementById('loginErrorMsg');
+            if(errEl) errEl.classList.add('hidden');
+            
+            if (role === 'admin') {
+                adminFields.classList.remove('hidden');
+            } else {
+                adminFields.classList.add('hidden');
+            }
+        }
+
+        function tryLoginSecure() {
+            const roleSelect = document.getElementById('loginRoleSelect');
+            const errEl = document.getElementById('loginErrorMsg');
+            if(!roleSelect) return;
+            
+            const selectedRole = roleSelect.value;
+            if(errEl) errEl.classList.add('hidden');
+
+            if (selectedRole === 'admin') {
+                const uVal = document.getElementById('adminUsername').value.trim();
+                const pVal = document.getElementById('adminPassword').value.trim();
+                
+                // التثبت من بيانات دخول الأدمن (admin / Ttnet1212)
+                if (uVal === 'admin' && pVal === 'Ttnet1212') {
+                    currentUserRole = 'admin';
+                    document.getElementById('loginModal').style.display = 'none';
+                    initApp();
+                } else {
+                    if(errEl) {
+                        errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+                        errEl.classList.remove('hidden');
+                    }
+                }
+            } else {
+                // دخول مباشر لليوزر بدون كلمة مرور
+                currentUserRole = 'user';
+                document.getElementById('loginModal').style.display = 'none';
+                initApp();
+            }
+        }
+
+        function logoutSystem() {
+            location.reload();
+        }
+
+        function initApp() {
+            const roleBadge = document.getElementById('userRoleText');
+            if (currentUserRole === 'admin') {
+                if(roleBadge) roleBadge.textContent = "صلاحية: مدير النظام (Admin) 🛡️";
+                if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'flex';
+                if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'flex';
+                if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'flex';
+                if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'flex';
+            } else {
+                if(roleBadge) roleBadge.textContent = "صلاحية: مستخدم (User - تصفح فقط) 👁️";
+                if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'none';
+                if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'none'; 
+                if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'none';
+                if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'none'; 
+            }
+
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const dateEl = document.getElementById('currentDateDisplay');
+            if(dateEl) dateEl.innerHTML = `<i class="fa-regular fa-calendar-days ml-1 text-yellow-400"></i> ${now.toLocaleDateString('ar-IQ', options)}`;
+            
+            const printDateEl = document.getElementById('printDateSpan');
+            if(printDateEl) printDateEl.textContent = now.toLocaleDateString('ar-IQ');
+
+            if(db) {
+                db.ref('projects').on('value', (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        if (Array.isArray(val)) {
+                            projects = val.filter(Boolean);
+                        } else if (typeof val === 'object') {
+                            projects = Object.values(val).filter(Boolean);
+                        }
+                    } else {
+                        projects = [];
+                    }
+                    populateDynamicFilters();
+                    filterTable();
+                }, (error) => {
+                    console.error("Firebase read error:", error);
+                    projects = [];
+                    populateDynamicFilters();
+                    filterTable();
+                });
+            } else {
+                projects = [];
+                populateDynamicFilters();
+                filterTable();
+            }
+        }
+
+        function syncToCloud() {
+            if (!db) return;
+            db.ref('projects').set(projects).catch(err => console.error("Cloud sync error:", err));
+        }
+
+        function toggleTVMode() {
+            const body = document.getElementById('mainBody');
+            body.classList.toggle('tv-mode-active');
+            const isTv = body.classList.contains('tv-mode-active');
+            const btn = document.getElementById('tvModeBtn');
+            if(btn) btn.innerHTML = isTv ? `<i class="fa-solid fa-desktop"></i> الوضع العادي` : `<i class="fa-solid fa-tv"></i> وضع الشاشة`;
+        }
+
+        function getNumericProgress(val) {
+            if (val === undefined || val === null || val === '') return 0;
+            if (typeof val === 'number') return val > 1 ? Number(val.toFixed(1)) : Number((val * 100).toFixed(1));
+            let str = String(val).replace('%', '').trim();
+            let num = Number(str);
+            if (isNaN(num)) return 0;
+            return num > 1 ? Number(num.toFixed(1)) : Number((num * 100).toFixed(1));
+        }
+
+        function formatDate(dVal) {
+            if (!dVal) return '';
+            let str = String(dVal).trim();
+            if (str.includes('T')) str = str.split('T')[0];
+            
+            let num = Number(str);
+            if (!isNaN(num) && num > 30000 && num < 60000) {
+                const excelDate = new Date(Math.round((num - (25567 + 2)) * 86400 * 1000));
+                if (!isNaN(excelDate.getTime())) {
+                    let y = excelDate.getFullYear();
+                    let m = String(excelDate.getMonth() + 1).padStart(2, '0');
+                    let d = String(excelDate.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}`;
+                }
+            }
+            return str;
+        }
+
+        function standardizeStatus(statusStr) {
+            if (!statusStr) return 'قيد التنفيذ';
+            let s = String(statusStr).trim();
+            if (allowedStatuses.includes(s)) return s;
+            if (s.includes('تجاري')) return 'تشغيل تجاري';
+            if (s.includes('متأخر')) return 'يعمل ومتأخر';
+            if (s.includes('منجز')) return 'منجز';
+            if (s.includes('متوقف')) return 'متوقف';
+            return 'قيد التنفيذ';
+        }
+
+        function getStatusBadgeStyle(status) {
+            const st = standardizeStatus(status);
+            switch(st) {
+                case 'تشغيل تجاري': return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+                case 'منجز': return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+                case 'قيد التنفيذ': return 'bg-blue-100 text-blue-800 border border-blue-300';
+                case 'يعمل ومتأخر': return 'bg-purple-100 text-purple-800 border border-purple-300';
+                case 'لم يباشر': return 'bg-amber-100 text-amber-800 border border-amber-300';
+                case 'متوقف': return 'bg-red-100 text-red-800 border border-red-300';
+                case 'اجازة مسحوبه': return 'bg-gray-200 text-gray-800 border border-gray-400';
+                default: return 'bg-blue-100 text-blue-800 border border-blue-300';
+            }
+        }
+
+        function getProgressBarStyle(prog) {
+            if (prog >= 90) return { barColor: 'bg-emerald-600', textColor: 'text-emerald-700' };
+            if (prog >= 50) return { barColor: 'bg-blue-600', textColor: 'text-blue-700' };
+            if (prog >= 20) return { barColor: 'bg-amber-500', textColor: 'text-amber-700' };
+            return { barColor: 'bg-rose-600', textColor: 'text-rose-700' };
+        }
+
+        function isProjectDelayed(p) {
+            const st = standardizeStatus(p.status);
+            const prog = getNumericProgress(p.progress);
+            if (st === 'يعمل ومتأخر' || st === 'متوقف')
