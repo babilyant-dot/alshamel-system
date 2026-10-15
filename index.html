@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة متابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V33.2)</title>
+    <title>منظومة متابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V33.4)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -74,7 +74,7 @@
                     <span class="text-2xl font-extrabold text-yellow-400 tracking-wider">الشامل</span>
                 </div>
                 <h2 class="text-base font-bold text-blue-950">هيئة استثمار الديوانية</h2>
-                <p class="text-xs text-gray-500 mt-1">المنظومة السحابية المتقدمة للمشاريع الاستثمارية (V33.2)</p>
+                <p class="text-xs text-gray-500 mt-1">المنظومة السحابية المشتركة للمشاريع الاستثمارية (V33.4)</p>
                 <p class="text-[11px] font-bold text-blue-800 mt-1">إعداد وتصميم وتنفيذ د. خالد محمد الخفاجي</p>
             </div>
             
@@ -104,7 +104,7 @@
                     </div>
                     <div>
                         <h1 class="text-sm font-bold text-white">هيئة استثمار الديوانية / التحول الرقمي</h1>
-                        <p class="text-[11px] text-blue-200">المنظومة التحليلية الذكية للمشاريع الاستثمارية (V33.2)</p>
+                        <p class="text-[11px] text-blue-200">المنظومة التحليلية الذكية للمشاريع الاستثمارية (V33.4)</p>
                     </div>
                 </div>
             </div>
@@ -463,7 +463,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic & Firebase Integration V33.2 -->
+    <!-- JavaScript Logic & Firebase Integration V33.4 -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
@@ -537,6 +537,7 @@
             const printDateEl = document.getElementById('printDateSpan');
             if(printDateEl) printDateEl.textContent = now.toLocaleDateString('ar-IQ');
 
+            // تفعيل الاستماع اللحظي للبيانات لجميع الحسابات (أدمن ويوزر) بدون استثناء
             if(db) {
                 db.ref('projects').on('value', (snapshot) => {
                     const val = snapshot.val();
@@ -565,7 +566,7 @@
         }
 
         function syncToCloud() {
-            if (currentUserRole !== 'admin' || !db) return;
+            if (!db) return;
             db.ref('projects').set(projects).catch(err => console.error("Cloud sync error:", err));
         }
 
@@ -1057,7 +1058,6 @@
                     
                     let imported = [];
                     json.forEach((row, idx) => {
-                        // تخطي صف العناوين أو الصفوف الفارغة تماماً
                         if (idx > 0 && row.some(cell => String(cell).trim() !== '')) {
                             const valNum = (colIdx) => {
                                 if (row[colIdx] === undefined || row[colIdx] === '') return 0;
@@ -1065,7 +1065,6 @@
                                 return isNaN(n) ? 0 : n;
                             };
 
-                            // البحث عن أول خلية نصية صالحة لتمثل اسم المشروع إذا رحلت الأعمدة
                             let nameVal = String(row[3] || row[2] || row[1] || '').trim();
                             if (nameVal && nameVal !== 'اسم المشروع' && nameVal !== 'المشروع' && !nameVal.includes('هيئة استثمار')) {
                                 imported.push({
@@ -1096,12 +1095,12 @@
 
                     if (imported.length > 0) {
                         projects = imported;
-                        syncToCloud(); // رفع البيانات للسحاب
+                        syncToCloud(); // رفع البيانات مرة واحدة للسحاب لتظهر لكلا الحسابين تلقائياً
                         populateDynamicFilters();
-                        filterTable(); // تحديث الجدول ورسم الشاشة فوراً
-                        alert(`تم استيراد وعرض ${projects.length} مشروعاً بنجاح تام!`);
+                        filterTable();
+                        alert(`تم استيراد وحفظ وعرض ${projects.length} مشروعاً في السحاب بنجاح تام!`);
                     } else {
-                        alert('تنبيه: لم يتم العثور على صفوف بيانات صالحة. يجدر التأكد من تطابق بنية أعمدة ملف الإكسل.');
+                        alert('تنبيه: لم يتم العثور على صفوف بيانات صالحة في ملف الإكسل.');
                     }
                 } catch (err) { 
                     console.error(err);
