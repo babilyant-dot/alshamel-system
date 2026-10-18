@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة متابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V33.6)</title>
+    <title>المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V36.0)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -66,7 +66,7 @@
 </head>
 <body id="mainBody" class="bg-gray-100 text-gray-800 min-h-screen flex flex-col transition-colors duration-500">
 
-    <!-- Login Modal -->
+    <!-- Unified Login Modal -->
     <div id="loginModal" class="fixed inset-0 bg-blue-950 bg-opacity-95 flex items-center justify-center z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-right border border-blue-100">
             <div class="text-center mb-6">
@@ -74,35 +74,24 @@
                     <span class="text-2xl font-extrabold text-yellow-400 tracking-wider">الشامل</span>
                 </div>
                 <h2 class="text-base font-bold text-blue-950">هيئة استثمار الديوانية</h2>
-                <p class="text-xs text-gray-500 mt-1">المنظومة السحابية المشتركة للمشاريع الاستثمارية (V33.6)</p>
-                <p class="text-[11px] font-bold text-blue-800 mt-1">إعداد وتصميم وتنفيذ د. خالد محمد الخفاجي</p>
+                <p class="text-xs text-gray-500 mt-1">المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (V36.0)</p>
+                <p class="text-[11px] font-bold text-blue-800 mt-1">إعداد وتصميم وتنفيذ: د. خالد محمد الخفاجي</p>
             </div>
             
-            <div class="space-y-4 text-xs">
+            <form id="loginForm" onsubmit="tryLoginSecure(event)" class="space-y-4 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1 text-gray-700">اختر صفة الدخول للنظام</label>
-                    <select id="loginRoleSelect" onchange="toggleAdminLoginFields()" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-blue-950">
-                        <option value="user">مستخدم</option>
-                        <option value="admin">مدير النظام</option>
-                    </select>
+                    <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-user text-blue-600 ml-1"></i> اسم المستخدم</label>
+                    <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
                 </div>
-
-                <!-- Admin Auth Fields -->
-                <div id="adminAuthFields" class="space-y-3 hidden pt-1 border-t border-dashed border-gray-200">
-                    <div>
-                        <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-user text-blue-600 ml-1"></i> اسم المستخدم</label>
-                        <input type="text" id="adminUsername" placeholder="أدخل اسم المستخدم" class="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
-                    </div>
-                    <div>
-                        <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-key text-blue-600 ml-1"></i> كلمة المرور</label>
-                        <input type="password" id="adminPassword" placeholder="أدخل كلمة المرور" class="w-full p-2.5 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
-                    </div>
+                <div>
+                    <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-key text-blue-600 ml-1"></i> كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
                 </div>
 
                 <p id="loginErrorMsg" class="text-red-600 text-[11px] font-bold hidden text-center bg-red-50 p-2 rounded-lg border border-red-200"></p>
 
-                <button type="button" onclick="tryLoginSecure()" id="loginSubmitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md transition text-sm">الدخول إلى المنظومة</button>
-            </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md transition text-sm">تسجيل الدخول</button>
+            </form>
         </div>
     </div>
 
@@ -119,7 +108,7 @@
                     </div>
                     <div>
                         <h1 class="text-sm font-bold text-white">هيئة استثمار الديوانية / التحول الرقمي</h1>
-                        <p class="text-[11px] text-blue-200">المنظومة التحليلية الذكية للمشاريع الاستثمارية (V33.6)</p>
+                        <p class="text-[11px] text-blue-200">المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (V36.0)</p>
                     </div>
                 </div>
             </div>
@@ -161,11 +150,16 @@
                     <i class="fa-solid fa-triangle-exclamation text-rose-600"></i> المشاريع المتأخرة ⚠️
                 </button>
             </div>
+            
+            <!-- أدوات الإدارة المتقدمة (تظهر للأدمن فقط) -->
             <div class="flex items-center gap-2">
-                <button onclick="openAIAnalysisModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+                <button id="adminLogBtn" onclick="openLogModal()" class="bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 hidden">
+                    <i class="fa-solid fa-clock-rotate-left text-yellow-400"></i> سجل الحركات (Log)
+                </button>
+                <button id="adminAiBtn" onclick="openAIAnalysisModal()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 hidden">
                     <i class="fa-solid fa-microchip"></i> التحليل الذكي والتعثر AI
                 </button>
-                <button onclick="openExecutiveSummary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5">
+                <button id="adminExecBtn" onclick="openExecutiveSummary()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow transition flex items-center gap-1.5 hidden">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> الملخص التنفيذي
                 </button>
             </div>
@@ -220,24 +214,6 @@
             </div>
         </div>
 
-        <!-- Print Header -->
-        <div class="hidden print:block text-center border-b-2 border-blue-900 pb-2 mb-3 w-full">
-            <div class="flex justify-between items-center text-[10px] text-gray-700 px-2">
-                <div class="text-right">
-                    <span class="font-bold text-blue-950 block text-xs">جمهورية العراق - هيئة استثمار الديوانية</span>
-                    <span>فريق التحول الرقمي / منظومة متابعة المشاريع (الشامل)</span>
-                </div>
-                <div class="text-center">
-                    <h2 class="text-sm font-extrabold text-blue-900 border-b pb-0.5 mb-0.5">التقرير الإحصائي الشامل والتحليلي للمشاريع الاستثمارية المجازة</h2>
-                    <span class="text-[9px] text-gray-500">مؤشرات الأداء الكلي وتوزيع القطاعات والحالات العملياتية</span>
-                </div>
-                <div class="text-left">
-                    <span class="block">تاريخ الإصدار: <span id="printDateSpan" class="font-mono font-bold"></span></span>
-                    <span class="text-[9px] text-blue-800 font-semibold">إشراف: د. خالد محمد الخفاجي</span>
-                </div>
-            </div>
-        </div>
-
         <!-- Statistics Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3 text-xs w-full">
             <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card">
@@ -268,11 +244,12 @@
                 </div>
                 <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-chart-line text-2xl"></i></div>
             </div>
-            <div class="bg-gradient-to-br from-teal-700 to-cyan-900 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card col-span-2 sm:col-span-1">
+            
+            <div id="healthCardBg" class="bg-gradient-to-br from-teal-700 to-cyan-900 text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card col-span-2 sm:col-span-1">
                 <div>
-                    <p class="text-teal-100 font-medium text-[11px]">مؤشر الصحة الاستثمارية</p>
+                    <p class="text-teal-100 font-medium text-[11px]">مؤشر الصحة الاستثمارية Realtime 🎯</p>
                     <h3 id="statHealthGaugeVal" class="text-xl font-bold mt-0.5 font-mono">0.0%</h3>
-                    <span id="statHealthGaugeStatus" class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-semibold text-teal-100">مستقر</span>
+                    <span id="statHealthGaugeStatus" class="text-[9px] bg-white/20 px-1.5 py-0.5 rounded font-semibold text-teal-100 block mt-1">مستقر</span>
                 </div>
                 <div class="bg-white/20 p-3 rounded-2xl text-white backdrop-blur-md shadow"><i class="fa-solid fa-heart-pulse text-2xl"></i></div>
             </div>
@@ -291,7 +268,7 @@
             <div class="bg-white p-3 rounded-xl shadow-sm border flex flex-col items-center w-full">
                 <h3 class="font-bold text-gray-700 mb-2 w-full text-right text-[11px] flex justify-between items-center">
                     <span><i class="fa-solid fa-chart-column ml-1 text-blue-600"></i> توزيع المشاريع حسب القطاع</span>
-                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي (انقر على العمود للفلترة)</span>
+                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي</span>
                 </h3>
                 <div class="chart-wrapper">
                     <canvas id="sectorChart"></canvas>
@@ -300,7 +277,7 @@
             <div class="bg-white p-3 rounded-xl shadow-sm border flex flex-col items-center w-full">
                 <h3 class="font-bold text-gray-700 mb-2 w-full text-right text-[11px] flex justify-between items-center">
                     <span><i class="fa-solid fa-chart-pie ml-1 text-blue-600"></i> توزيع المشاريع حسب الحالة</span>
-                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي (انقر على الجزء للفلترة)</span>
+                    <span class="text-[9px] text-gray-400 font-normal">تفاعلي</span>
                 </h3>
                 <div class="chart-wrapper">
                     <canvas id="statusChart"></canvas>
@@ -350,7 +327,41 @@
         </div>
     </main>
 
-    <!-- Project 360 View Modal -->
+    <!-- Audit Log Modal (Admin Only) -->
+    <div id="logModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden no-print">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 text-right relative">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-yellow-500 text-lg"></i> سجل الحركات والأنشطة (Admin Audit Log)
+                </h3>
+                <button onclick="document.getElementById('logModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs border">
+                    <thead class="bg-gray-800 text-white font-semibold">
+                        <tr>
+                            <th class="p-2 text-center w-[40px]">ت</th>
+                            <th class="p-2 w-[140px]">التاريخ والوقت</th>
+                            <th class="p-2 w-[100px]">اسم المستخدم</th>
+                            <th class="p-2 w-[110px]">نوع الحركة</th>
+                            <th class="p-2">تفاصيل الإجراء / الحركة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody" class="divide-y divide-gray-200">
+                        <tr><td colspan="5" class="text-center p-4 text-gray-500">جاري تحميل السجل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center border-t pt-3">
+                <button onclick="clearAuditLogs()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold"><i class="fa-solid fa-trash-can ml-1"></i> مسح سجل الحركات</button>
+                <button onclick="document.getElementById('logModal').classList.add('hidden')" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-1.5 rounded-lg text-xs font-semibold">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project 360 Modal -->
     <div id="project360Modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 text-right relative">
             <div class="flex justify-between items-start border-b pb-3 mb-4">
@@ -429,7 +440,7 @@
         </div>
     </div>
 
-    <!-- Modal Form -->
+    <!-- Add/Edit Modal -->
     <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden no-print">
         <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6">
             <div class="flex justify-between items-center pb-3 border-b mb-4">
@@ -478,7 +489,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic & Firebase Integration V33.6 -->
+    <!-- JavaScript Logic & Firebase Integration V36.0 -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
@@ -499,7 +510,23 @@
             console.error("Firebase init error:", e);
         }
 
+        const userDatabase = {
+            'admin': { pass: 'Ttnet1212', role: 'admin' },
+            'diw': { pass: 'diw09', role: 'user' },
+            'manag': { pass: '951', role: 'user' },
+            'dep': { pass: '753', role: 'user' },
+            'win': { pass: '846', role: 'user' },
+            'eco': { pass: '927', role: 'user' },
+            'law': { pass: '294', role: 'user' },
+            'pr': { pass: '834', role: 'user' },
+            'aud': { pass: '175', role: 'user' },
+            'office': { pass: '084', role: 'user' },
+            'folo': { pass: '509', role: 'user' },
+            'test': { pass: 'test001', role: 'user' }
+        };
+
         let projects = [];
+        let currentUsername = '';
         let currentUserRole = null; 
         let statusChartInstance = null;
         let sectorChartInstance = null;
@@ -508,79 +535,89 @@
         const allowedStatuses = ["قيد التنفيذ", "تشغيل تجاري", "يعمل ومتأخر", "منجز", "لم يباشر", "متوقف", "اجازة مسحوبه"];
         const statusColorsList = ['#3b82f6', '#10b981', '#8b5cf6', '#eab308', '#f59e0b', '#ef4444', '#6b7280'];
 
-        function toggleAdminLoginFields() {
-            const roleSelect = document.getElementById('loginRoleSelect');
-            if(!roleSelect) return;
-            const role = roleSelect.value;
-            const adminFields = document.getElementById('adminAuthFields');
-            const errEl = document.getElementById('loginErrorMsg');
-            if(errEl) errEl.classList.add('hidden');
-            
-            if (role === 'admin') {
-                if(adminFields) adminFields.classList.remove('hidden');
-            } else {
-                if(adminFields) adminFields.classList.add('hidden');
+        function logUserActivity(actionType, details) {
+            if (!db) return;
+            try {
+                const now = new Date();
+                const timeStr = now.toLocaleDateString('ar-IQ') + ' - ' + now.toLocaleTimeString('ar-IQ');
+                const logEntry = {
+                    timestamp: Date.now(),
+                    formattedTime: timeStr,
+                    username: currentUsername || 'زائر',
+                    role: currentUserRole || 'غير محدد',
+                    actionType: actionType,
+                    details: details
+                };
+                db.ref('audit_logs').push(logEntry).catch(err => console.warn("Log skip:", err));
+            } catch(e) {
+                console.warn("Log write error:", e);
             }
         }
 
-        function tryLoginSecure() {
-            const roleSelect = document.getElementById('loginRoleSelect');
+        function tryLoginSecure(e) {
+            if (e && e.preventDefault) e.preventDefault();
+
+            const uInput = document.getElementById('loginUsername');
+            const pInput = document.getElementById('loginPassword');
             const errEl = document.getElementById('loginErrorMsg');
-            if(!roleSelect) return;
             
-            const selectedRole = roleSelect.value;
+            const rawUser = uInput ? uInput.value.trim() : '';
+            const uVal = rawUser.toLowerCase();
+            const pVal = pInput ? pInput.value.trim() : '';
+            
             if(errEl) errEl.classList.add('hidden');
 
-            if (selectedRole === 'admin') {
-                const uInput = document.getElementById('adminUsername');
-                const pInput = document.getElementById('adminPassword');
-                const uVal = uInput ? uInput.value.trim() : '';
-                const pVal = pInput ? pInput.value.trim() : '';
+            if (userDatabase[uVal] && userDatabase[uVal].pass === pVal) {
+                currentUsername = rawUser;
+                currentUserRole = userDatabase[uVal].role;
+                document.getElementById('loginModal').classList.add('hidden');
                 
-                if (uVal === 'admin' && pVal === 'Ttnet1212') {
-                    currentUserRole = 'admin';
-                    document.getElementById('loginModal').style.display = 'none';
-                    initApp();
-                } else {
-                    if(errEl) {
-                        errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
-                        errEl.classList.remove('hidden');
-                    }
-                }
-            } else {
-                currentUserRole = 'user';
-                document.getElementById('loginModal').style.display = 'none';
                 initApp();
+                logUserActivity('تسجيل دخول', `تم تسجيل الدخول بنجاح للمستخدم: ${rawUser}`);
+            } else {
+                if(errEl) {
+                    errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
+                    errEl.classList.remove('hidden');
+                }
             }
+            return false;
         }
 
         function logoutSystem() {
+            logUserActivity('تسجيل خروج', `قام المستخدم ${currentUsername} بإنهاء الجلسة.`);
             location.reload();
         }
 
         function initApp() {
             const roleBadge = document.getElementById('userRoleText');
             if (currentUserRole === 'admin') {
-                if(roleBadge) roleBadge.textContent = "صلاحية: مدير النظام (Admin) 🛡️";
+                if(roleBadge) roleBadge.textContent = `حساب: ${currentUsername} (مدير النظام Admin) 🛡️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'flex';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'flex';
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'flex';
                 if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'flex';
+                
+                // إظهار الأدوات الخاصة بالأدمن فقط
+                if(document.getElementById('adminLogBtn')) document.getElementById('adminLogBtn').classList.remove('hidden');
+                if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.remove('hidden');
+                if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.remove('hidden');
             } else {
-                if(roleBadge) roleBadge.textContent = "صلاحية: مستخدم (User - تصفح فقط) 👁️";
+                if(roleBadge) roleBadge.textContent = `حساب: ${currentUsername} (مستخدم User - تصفح فقط) 👁️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'none';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'none'; 
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'none';
                 if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'none'; 
+                
+                // إخفاء الأدوات عن بقية اليوزرات
+                if(document.getElementById('adminLogBtn')) document.getElementById('adminLogBtn').classList.add('hidden');
+                if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.add('hidden');
+                if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.add('hidden');
             }
 
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
             const dateEl = document.getElementById('currentDateDisplay');
             if(dateEl) dateEl.innerHTML = `<i class="fa-regular fa-calendar-days ml-1 text-yellow-400"></i> ${now.toLocaleDateString('ar-IQ', options)}`;
-            
-            const printDateEl = document.getElementById('printDateSpan');
-            if(printDateEl) printDateEl.textContent = now.toLocaleDateString('ar-IQ');
 
             if(db) {
                 db.ref('projects').on('value', (snapshot) => {
@@ -606,6 +643,53 @@
                 projects = [];
                 populateDynamicFilters();
                 filterTable();
+            }
+        }
+
+        function openLogModal() {
+            if (currentUserRole !== 'admin') return;
+            const logTbody = document.getElementById('logTableBody');
+            logTbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500">جاري جلب سجل الحركات من السحاب...</td></tr>`;
+            document.getElementById('logModal').classList.remove('hidden');
+
+            db.ref('audit_logs').orderByChild('timestamp').limitToLast(100).once('value', (snapshot) => {
+                logTbody.innerHTML = '';
+                const logs = [];
+                snapshot.forEach(childSnap => {
+                    logs.push(childSnap.val());
+                });
+                logs.reverse();
+
+                if (logs.length === 0) {
+                    logTbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-500 font-bold">لا توجد حركات مسجلة حتى الآن.</td></tr>`;
+                    return;
+                }
+
+                logs.forEach((item, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 text-[11px]";
+                    let badgeClass = "bg-blue-100 text-blue-800";
+                    if (item.actionType && item.actionType.includes('حذف')) badgeClass = "bg-red-100 text-red-800";
+                    if (item.actionType && item.actionType.includes('إضافة')) badgeClass = "bg-emerald-100 text-emerald-800";
+                    if (item.actionType && item.actionType.includes('تعديل')) badgeClass = "bg-amber-100 text-amber-800";
+
+                    tr.innerHTML = `
+                        <td class="p-2 text-center font-bold">${idx + 1}</td>
+                        <td class="p-2 font-mono whitespace-nowrap">${item.formattedTime || '-'}</td>
+                        <td class="p-2 font-bold text-blue-900">${item.username || '-'}</td>
+                        <td class="p-2"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${item.actionType || '-'}</span></td>
+                        <td class="p-2 text-gray-700 font-medium">${item.details || '-'}</td>
+                    `;
+                    logTbody.appendChild(tr);
+                });
+            });
+        }
+
+        function clearAuditLogs() {
+            if (currentUserRole !== 'admin') return;
+            if (confirm('هل أنت متأكد من مسح كافة سجلات الحركات المسجلة؟')) {
+                db.ref('audit_logs').remove();
+                openLogModal();
             }
         }
 
@@ -689,21 +773,109 @@
             return false;
         }
 
+        function calculateRealtimeHealthGauge(dataList) {
+            if (!dataList || dataList.length === 0) return { score: 0, status: 'لا توجد بيانات', bgClass: 'from-gray-700 to-gray-900' };
+
+            const today = new Date();
+            let totalWeightedScore = 0;
+
+            dataList.forEach(p => {
+                const st = standardizeStatus(p.status);
+                const prog = getNumericProgress(p.progress);
+                let pScore = 0;
+
+                let yearsSinceLicense = 0;
+                if (p.licenseDate) {
+                    const lDate = new Date(formatDate(p.licenseDate));
+                    if (!isNaN(lDate.getTime())) {
+                        const diffTime = Math.abs(today - lDate);
+                        yearsSinceLicense = diffTime / (1000 * 60 * 60 * 24 * 365.25);
+                    }
+                }
+
+                if (st === 'منجز' || st === 'تشغيل تجاري') {
+                    pScore = 100;
+                } else if (st === 'لم يباشر') {
+                    if (yearsSinceLicense >= 2) {
+                        pScore = 0;
+                    } else {
+                        pScore = 40;
+                    }
+                } else if (st === 'متوقف' || st === 'اجازة مسحوبه') {
+                    pScore = 0;
+                } else if (st === 'يعمل ومتأخر') {
+                    pScore = Math.max(0, prog - 15);
+                } else {
+                    pScore = prog;
+                }
+
+                totalWeightedScore += pScore;
+            });
+
+            const finalGaugeScore = Number((totalWeightedScore / dataList.length).toFixed(1));
+
+            let gaugeStatus = 'مستقر';
+            let bgStyle = 'from-teal-700 to-cyan-900';
+
+            if (finalGaugeScore >= 75) {
+                gaugeStatus = 'ممتاز ومستقر للغاية 🟢';
+                bgStyle = 'from-emerald-700 to-teal-900';
+            } else if (finalGaugeScore >= 50) {
+                gaugeStatus = 'مستقر وضمن الحدود 🟡';
+                bgStyle = 'from-teal-700 to-cyan-900';
+            } else if (finalGaugeScore >= 30) {
+                gaugeStatus = 'تحت المتابعة وتلكؤ جزئي 🟧';
+                bgStyle = 'from-amber-700 to-orange-900';
+            } else {
+                gaugeStatus = 'حرج يستدعي التدخل 🔴';
+                bgStyle = 'from-rose-800 to-red-950';
+            }
+
+            return { score: finalGaugeScore, status: gaugeStatus, bgClass: bgStyle };
+        }
+
+        function updateStatistics(data) {
+            const totalProjects = data.length;
+            const totalCost = data.reduce((sum, p) => sum + Number(p.cost || 0), 0);
+            const totalValuation = data.reduce((sum, p) => sum + Number(p.valuationAmount || 0), 0);
+            const avgProgress = totalProjects > 0 ? (data.reduce((sum, p) => sum + getNumericProgress(p.progress), 0) / totalProjects) : 0;
+
+            document.getElementById('statTotalProjects').textContent = totalProjects.toLocaleString();
+            document.getElementById('statTotalCost').textContent = totalCost.toLocaleString() + ' د.ع';
+            document.getElementById('statTotalValuation').textContent = totalValuation.toLocaleString() + ' د.ع';
+            document.getElementById('statAvgProgress').textContent = avgProgress.toFixed(1) + '%';
+
+            const healthGauge = calculateRealtimeHealthGauge(data);
+            document.getElementById('statHealthGaugeVal').textContent = healthGauge.score + '%';
+            document.getElementById('statHealthGaugeStatus').textContent = healthGauge.status;
+            
+            const healthCard = document.getElementById('healthCardBg');
+            if(healthCard) {
+                healthCard.className = `bg-gradient-to-br ${healthGauge.bgClass} text-white p-3.5 rounded-xl shadow-sm flex items-center justify-between print-card-compact interactive-card col-span-2 sm:col-span-1`;
+            }
+
+            updateSectorStatsSummary(data);
+            updateCharts(data);
+        }
+
         function openAIAnalysisModal() {
+            if (currentUserRole !== 'admin') return;
             const total = projects.length;
             const delayedCount = projects.filter(p => isProjectDelayed(p)).length;
             const riskRate = total > 0 ? ((delayedCount / total) * 100).toFixed(1) : 0;
-            const avgProg = total > 0 ? (projects.reduce((acc, p) => acc + getNumericProgress(p.progress), 0) / total) : 0;
-            const efficiency = (avgProg / 10).toFixed(1);
+            const healthInfo = calculateRealtimeHealthGauge(projects);
+            const efficiency = (healthInfo.score / 10).toFixed(1);
 
             document.getElementById('aiRiskIndexVal').textContent = riskRate + '%';
             document.getElementById('aiEfficiencyVal').textContent = efficiency + ' / 10';
 
-            let recText = "الأداء الاستثماري العام مستقر وضمن الحدود الطبيعية لمؤشرات الإنجاز.";
-            if (riskRate > 30) {
+            let recText = "الأداء الاستثماري العام مستقر وضمن الحدود الطبيعية لمؤشرات الإنجاز الواقعية.";
+            if (healthInfo.score < 40) {
+                recText = "تنبيه ذكي عالي الخطورة: مؤشر الصحة الواقعي منخفض بسبب وجود مشاريع متوقفة أو تجاوزت سنتين بدون مباشرة. يُوصى بتوجيه إنذارات قانونية وإعادة تخصيص الفرص الاستثمارية.";
+            } else if (riskRate > 25) {
                 recText = "تنبيه ذكي: نسبة مخاطر التعثر مرتفعة نسبياً، يُنصح بتشكيل لجنة متابعة ميدانية عاجلة للمشاريع المتأخرة وتذليل العقبات الإدارية.";
             } else if (efficiency > 7) {
-                recText = "أداء ممتاز: معامل الكفاءة الاستثمارية عالٍ، وعدد المشاريع المنجزة والعاملة يسير وفق الجدول الزمني المخطط.";
+                recText = "أداء ممتاز: معامل الكفاءة الاستثمارية الموزون عالٍ، وعدد المشاريع المنجزة والعاملة يسير وفق الجدول الزمني المخطط.";
             }
             document.getElementById('aiRecommendationVal').textContent = recText;
 
@@ -725,10 +897,11 @@
         }
 
         function openExecutiveSummary() {
+            if (currentUserRole !== 'admin') return;
             const total = projects.length;
             const totalCost = projects.reduce((acc, p) => acc + Number(p.cost || 0), 0);
             const totalVal = projects.reduce((acc, p) => acc + Number(p.valuationAmount || 0), 0);
-            const avgProg = total > 0 ? (projects.reduce((acc, p) => acc + getNumericProgress(p.progress), 0) / total).toFixed(1) : 0;
+            const healthInfo = calculateRealtimeHealthGauge(projects);
             
             const contentEl = document.getElementById('executiveSummaryContent');
             contentEl.innerHTML = `
@@ -738,8 +911,8 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div class="bg-gray-50 p-3 rounded-xl border">
-                        <span class="text-gray-500 block text-[10px]">متوسط نسبة الإنجاز العام</span>
-                        <b class="text-indigo-900 text-base font-mono">${avgProg}%</b>
+                        <span class="text-gray-500 block text-[10px]">مؤشر الصحة الاستثمارية الواقعي (الموزون)</span>
+                        <b class="text-indigo-900 text-base font-mono">${healthInfo.score}% (${healthInfo.status})</b>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-xl border">
                         <span class="text-gray-500 block text-[10px]">عدد القطاعات الاستثمارية النشطة</span>
@@ -748,7 +921,7 @@
                 </div>
                 <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
                     <h4 class="font-bold text-emerald-950 mb-1"><i class="fa-solid fa-circle-check ml-1"></i> الخلاصة والتوصيات الاستراتيجية</h4>
-                    <p class="text-emerald-900 leading-relaxed">المنظومة تعمل بكفاءة عالية وفق بيئة التحول الرقمي السحابي، مع تكامل تام لكافة البيانات الحقلية والمكانية والمالية، مما يضمن اتخاذ القرار الاستثماري السليم بدقة وموضوعية عالية.</p>
+                    <p class="text-emerald-900 leading-relaxed">المنظومة تعمل بكفاءة عالية وفق بيئة التحول الرقمي السحابي، مع احتساب دقيق للمخاطر الزمنية والعملياتية لضمان عدم تجميد الأراضي الاستثمارية وتذليل معوقات الاستثمار الميداني.</p>
                 </div>
             `;
             document.getElementById('executiveSummaryModal').classList.remove('hidden');
@@ -906,22 +1079,6 @@
             document.getElementById('project360Modal').classList.remove('hidden');
         }
 
-        function updateStatistics(data) {
-            const totalProjects = data.length;
-            const totalCost = data.reduce((sum, p) => sum + Number(p.cost || 0), 0);
-            const totalValuation = data.reduce((sum, p) => sum + Number(p.valuationAmount || 0), 0);
-            const avgProgress = totalProjects > 0 ? (data.reduce((sum, p) => sum + getNumericProgress(p.progress), 0) / totalProjects) : 0;
-
-            document.getElementById('statTotalProjects').textContent = totalProjects.toLocaleString();
-            document.getElementById('statTotalCost').textContent = totalCost.toLocaleString() + ' د.ع';
-            document.getElementById('statTotalValuation').textContent = totalValuation.toLocaleString() + ' د.ع';
-            document.getElementById('statAvgProgress').textContent = avgProgress.toFixed(1) + '%';
-            document.getElementById('statHealthGaugeVal').textContent = avgProgress.toFixed(1) + '%';
-
-            updateSectorStatsSummary(data);
-            updateCharts(data);
-        }
-
         function updateSectorStatsSummary(data) {
             const sectorContainer = document.getElementById('sectorStatsContainer');
             if(!sectorContainer) return;
@@ -1000,11 +1157,12 @@
             e.preventDefault();
             if (currentUserRole !== 'admin') return;
             const id = document.getElementById('projectId').value;
+            const pNameVal = document.getElementById('pName').value;
             const formData = {
                 id: id ? Number(id) : (projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1),
                 licenseNum: document.getElementById('pLicenseNum').value,
                 licenseDate: document.getElementById('pLicenseDate').value,
-                name: document.getElementById('pName').value,
+                name: pNameVal,
                 sector: document.getElementById('pSector').value,
                 investor: document.getElementById('pInvestor').value,
                 consultant: document.getElementById('pConsultant').value,
@@ -1022,11 +1180,14 @@
                 valuation: document.getElementById('pValuation').value,
                 valuationAmount: Number(document.getElementById('pValuationAmount').value)
             };
+
             if (id) {
                 const index = projects.findIndex(p => p.id == id);
                 if (index !== -1) projects[index] = formData;
+                logUserActivity('تعديل مشروع', `تم تعديل بيانات المشروع: (${pNameVal}) - رقم الإجازة: ${formData.licenseNum}`);
             } else {
                 projects.push(formData);
+                logUserActivity('إضافة مشروع', `تم إضافة مشروع جديد: (${pNameVal}) - رقم الإجازة: ${formData.licenseNum}`);
             }
             syncToCloud();
             populateDynamicFilters();
@@ -1064,8 +1225,10 @@
 
         function deleteProject(id) {
             if (currentUserRole !== 'admin') return;
+            const p = projects.find(item => item.id === id);
             if (confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
                 projects = projects.filter(item => item.id !== id);
+                if(p) logUserActivity('حذف مشروع', `تم حذف المشروع: (${p.name}) - رقم الإجازة: ${p.licenseNum || '-'}`);
                 syncToCloud();
                 populateDynamicFilters();
                 filterTable();
@@ -1081,10 +1244,12 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "المشاريع");
             XLSX.writeFile(wb, "AlShamel_Report_Pro.xlsx");
+            logUserActivity('تصدير Excel', `تم تصدير ملف التقرير Excel بنجاح.`);
         }
 
         function printStatisticalReport() { 
             if (currentUserRole !== 'admin') return;
+            logUserActivity('طباعة تقرير', `تم طباعة التقرير الإحصائي بملف A4.`);
             window.print(); 
         }
 
@@ -1140,6 +1305,7 @@
                     if (imported.length > 0) {
                         projects = imported;
                         syncToCloud(); 
+                        logUserActivity('استيراد Excel', `تم رفع واستيراد ملف Excel جديد يحتوي على ${imported.length} مشروعاً.`);
                         populateDynamicFilters();
                         filterTable();
                         alert(`تم استيراد وحفظ وعرض ${projects.length} مشروعاً في السحاب بنجاح تام!`);
