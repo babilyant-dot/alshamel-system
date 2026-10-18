@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (الشامل - النسخة V36.0)</title>
+    <title>منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (الشامل - النسخة V4.1)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -19,9 +19,24 @@
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Cairo', sans-serif; }
         .whitespace-nowrap { white-space: nowrap !important; }
+        
+        /* التنسيقات الخاصة بوضع الشاشة الداكن */
         .tv-mode-active { background-color: #0f172a !important; color: #f8fafc !important; }
         .tv-mode-active .bg-white { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
         .tv-mode-active .text-gray-700, .tv-mode-active .text-gray-800, .tv-mode-active .text-blue-900 { color: #f1f5f9 !important; }
+        
+        /* إصلاح تباين بطاقات ملخص القطاعات في وضع الشاشة */
+        .tv-mode-active .sector-card-item {
+            background: linear-gradient(to bottom right, #334155, #1e293b) !important;
+            border-color: #475569 !important;
+            color: #f8fafc !important;
+        }
+        .tv-mode-active .sector-card-item h4 {
+            color: #38bdf8 !important;
+        }
+        .tv-mode-active .sector-card-item span, .tv-mode-active .sector-card-item b {
+            color: #f1f5f9 !important;
+        }
         
         @media print {
             @page { size: A4 portrait; margin: 6mm; }
@@ -68,30 +83,41 @@
 
     <!-- Unified Login Modal -->
     <div id="loginModal" class="fixed inset-0 bg-blue-950 bg-opacity-95 flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-right border border-blue-100">
-            <div class="text-center mb-6">
-                <div class="inline-block bg-gradient-to-r from-blue-700 to-indigo-800 px-5 py-2 rounded-2xl shadow-md mb-2">
-                    <span class="text-2xl font-extrabold text-yellow-400 tracking-wider">الشامل</span>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-right border border-blue-100 relative flex flex-col justify-between max-h-[90vh] overflow-y-auto">
+            <div>
+                <div class="text-center mb-6 space-y-2">
+                    <h3 class="text-xs font-bold text-blue-950">هيئة استثمار الديوانية / التحول الرقمي</h3>
+                    <div>
+                        <div class="inline-block bg-gradient-to-r from-blue-700 to-indigo-800 px-6 py-1.5 rounded-2xl shadow-md my-1">
+                            <span class="text-2xl font-extrabold text-yellow-400 tracking-wider">الشامل</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 font-semibold">منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (V4.1)</p>
+                    <div class="pt-1">
+                        <span class="text-[11px] font-bold text-blue-800 bg-blue-50 py-1 px-3 rounded-lg border border-blue-100 inline-block">إعداد وتصميم وتنفيذ: د. خالد محمد الخفاجي / رئيس فريق التحول الرقمي</span>
+                    </div>
                 </div>
-                <h2 class="text-base font-bold text-blue-950">هيئة استثمار الديوانية</h2>
-                <p class="text-xs text-gray-500 mt-1">المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (V36.0)</p>
-                <p class="text-[11px] font-bold text-blue-800 mt-1">إعداد وتصميم وتنفيذ: د. خالد محمد الخفاجي</p>
+                
+                <form id="loginForm" onsubmit="tryLoginSecure(event)" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-user text-blue-600 ml-1"></i> اسم المستخدم</label>
+                        <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-key text-blue-600 ml-1"></i> كلمة المرور</label>
+                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
+                    </div>
+
+                    <p id="loginErrorMsg" class="text-red-600 text-[11px] font-bold hidden text-center bg-red-50 p-2 rounded-lg border border-red-200"></p>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md transition text-sm">تسجيل الدخول</button>
+                </form>
             </div>
-            
-            <form id="loginForm" onsubmit="tryLoginSecure(event)" class="space-y-4 text-xs">
-                <div>
-                    <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-user text-blue-600 ml-1"></i> اسم المستخدم</label>
-                    <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
-                </div>
-                <div>
-                    <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-key text-blue-600 ml-1"></i> كلمة المرور</label>
-                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
-                </div>
 
-                <p id="loginErrorMsg" class="text-red-600 text-[11px] font-bold hidden text-center bg-red-50 p-2 rounded-lg border border-red-200"></p>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold shadow-md transition text-sm">تسجيل الدخول</button>
-            </form>
+            <!-- حقوق الملكية أسفل نافذة تسجيل الدخول -->
+            <div class="mt-6 pt-3 border-t text-center text-[10px] text-gray-500 font-medium">
+                جميع الحقوق محفوظة © 2026 - هيئة استثمار الديوانية / التحول الرقمي
+            </div>
         </div>
     </div>
 
@@ -108,7 +134,7 @@
                     </div>
                     <div>
                         <h1 class="text-sm font-bold text-white">هيئة استثمار الديوانية / التحول الرقمي</h1>
-                        <p class="text-[11px] text-blue-200">المنظومة الذكية لمتابعة المشاريع الاستثمارية المجازة (V36.0)</p>
+                        <p class="text-[11px] text-blue-200">منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (V4.1)</p>
                     </div>
                 </div>
             </div>
@@ -327,6 +353,11 @@
         </div>
     </main>
 
+    <!-- Footer / حقوق الملكية للواجهة الرئيسية -->
+    <footer class="bg-blue-950 text-blue-200 py-3 px-6 mt-auto text-center text-xs border-t border-blue-900 no-print">
+        <p>جميع الحقوق محفوظة © 2026 - هيئة استثمار الديوانية / التحول الرقمي | منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (الشامل)</p>
+    </footer>
+
     <!-- Audit Log Modal (Admin Only) -->
     <div id="logModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 text-right relative">
@@ -489,7 +520,7 @@
         </div>
     </div>
 
-    <!-- JavaScript Logic & Firebase Integration V36.0 -->
+    <!-- JavaScript Logic & Firebase Integration V4.1 -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
@@ -597,7 +628,6 @@
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'flex';
                 if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'flex';
                 
-                // إظهار الأدوات الخاصة بالأدمن فقط
                 if(document.getElementById('adminLogBtn')) document.getElementById('adminLogBtn').classList.remove('hidden');
                 if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.remove('hidden');
                 if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.remove('hidden');
@@ -608,7 +638,6 @@
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'none';
                 if(document.getElementById('adminBtnPrint')) document.getElementById('adminBtnPrint').style.display = 'none'; 
                 
-                // إخفاء الأدوات عن بقية اليوزرات
                 if(document.getElementById('adminLogBtn')) document.getElementById('adminLogBtn').classList.add('hidden');
                 if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.add('hidden');
                 if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.add('hidden');
@@ -1093,7 +1122,7 @@
             Object.keys(sectorSummary).forEach(sec => {
                 const info = sectorSummary[sec];
                 const card = document.createElement('div');
-                card.className = "bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-2 shadow-sm cursor-pointer hover:border-blue-500 transition";
+                card.className = "bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-2 shadow-sm cursor-pointer hover:border-blue-500 transition sector-card-item";
                 card.onclick = () => { document.getElementById('filterSector').value = sec; filterTable(); };
                 card.innerHTML = `
                     <h4 class="font-bold text-blue-900 text-[10px] mb-1 truncate"><i class="fa-solid fa-layer-group text-blue-600 ml-1"></i> ${sec}</h4>
