@@ -94,7 +94,7 @@
                 <form id="loginForm" onsubmit="tryLoginSecure(event)" class="space-y-4 text-xs">
                     <div>
                         <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-user text-blue-600 ml-1"></i> اسم المستخدم</label>
-                        <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
+                        <input type="text" id="loginUsername" placeholder="مثال: admin, diw, manag..." required class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-sans text-xs">
                     </div>
                     <div>
                         <label class="block font-semibold mb-1 text-gray-700"><i class="fa-solid fa-key text-blue-600 ml-1"></i> كلمة المرور</label>
@@ -107,9 +107,8 @@
                 </form>
             </div>
 
-            <!-- حقوق الملكية أسفل نافذة تسجيل الدخول -->
             <div class="mt-6 pt-3 border-t text-center text-[10px] text-gray-500 font-medium">
-                 © 2026 - هيئة استثمار الديوانية / التحول الرقمي
+                جميع الحقوق محفوظة © 2026 - هيئة استثمار الديوانية / التحول الرقمي
             </div>
         </div>
     </div>
@@ -346,10 +345,10 @@
 
     <!-- Footer -->
     <footer class="bg-blue-950 text-blue-200 py-3 px-6 mt-auto text-center text-xs border-t border-blue-900 no-print">
-        <p> © 2026 - هيئة استثمار الديوانية / التحول الرقمي | منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (الشامل)</p>
+        <p>جميع الحقوق محفوظة © 2026 - هيئة استثمار الديوانية / التحول الرقمي | منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (الشامل)</p>
     </footer>
 
-    <!-- Audit Log Modal (Admin Only) -->
+    <!-- Audit Log Modal -->
     <div id="logModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden no-print">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 text-right relative">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -511,9 +510,9 @@
         </div>
     </div>
 
-    <!-- JavaScript Core & Official Titles Map -->
+    <!-- JavaScript Core & Verified Login Logic -->
     <script>
-        const _0xdbConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
             authDomain: "dic-alshamel.firebaseapp.com",
             databaseURL: "https://dic-alshamel-default-rtdb.firebaseio.com",
@@ -526,26 +525,26 @@
 
         let db = null;
         try {
-            firebase.initializeApp(_0xdbConfig);
+            firebase.initializeApp(firebaseConfig);
             db = firebase.database();
         } catch(e) {
             console.error("Database connection fault:", e);
         }
 
-        const _0xusrMap = {
+        const userDatabase = {
             'admin': { pass: 'Ttnet1212', role: 'admin', title: 'مدير النظام' },
             'diw': { pass: 'diw09', role: 'user', title: 'هيئة الاستثمار' },
             'manag': { pass: '951', role: 'user', title: ' رئيس الهيئة' },
-            'dep': { pass: '753', role: 'user', title: ' نائب ر. الهيئة ' },
+            'dep': { pass: '753', role: 'user', title: ' نائب رئيس الهيئة' },
             'win': { pass: '846', role: 'user', title: 'قسم النافذة الواحدة' },
-            'eco': { pass: '927', role: 'user', title: 'القسم الاقتصادي والفني' },
+            'eco': { pass: '927', role: 'user', title: 'القسم الاقتصادي' },
             'law': { pass: '294', role: 'user', title: 'القسم القانوني' },
-            'pr': { pass: '834', role: 'user', title: 'قسم العلاقات والإعلام' },
+            'pr': { pass: '834', role: 'user', title: 'قسم العلاقات العامة' },
             'aud': { pass: '175', role: 'user', title: 'قسم التدقيق والرقابة الداخلية' },
             'office': { pass: '084', role: 'user', title: 'مكتب رئيس الهيئة' },
             'folo': { pass: '509', role: 'user', title: 'شعبة المتابعة' },
             'test': { pass: 'test001', role: 'user', title: 'حساب تجريبي' }
-        };حقوق
+        };
 
         let projects = [];
         let currentUsername = '';
@@ -587,10 +586,10 @@
             
             if(errEl) errEl.classList.add('hidden');
 
-            if (_0xusrMap[uVal] && _0xusrMap[uVal].pass === pVal) {
+            if (userDatabase[uVal] && userDatabase[uVal].pass === pVal) {
                 currentUsername = rawUser;
-                currentUserRole = _0xusrMap[uVal].role;
-                currentTitle = _0xusrMap[uVal].title;
+                currentUserRole = userDatabase[uVal].role;
+                currentTitle = userDatabase[uVal].title;
                 document.getElementById('loginModal').classList.add('hidden');
                 
                 initApp();
@@ -612,7 +611,7 @@
         function initApp() {
             const roleBadge = document.getElementById('userRoleText');
             if (currentUserRole === 'admin') {
-                if(roleBadge) roleBadge.textContent = `المسمى الوظيفي: ${currentTitle} 🛡️`;
+                if(roleBadge) roleBadge.textContent = `حساب: ${currentTitle} 🛡️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'flex';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'flex';
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'flex';
@@ -622,7 +621,7 @@
                 if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.remove('hidden');
                 if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.remove('hidden');
             } else {
-                if(roleBadge) roleBadge.textContent = `المسمى الوظيفي: ${currentTitle} 👁️`;
+                if(roleBadge) roleBadge.textContent = `حساب: ${currentTitle} 👁️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'none';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'none'; 
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'none';
