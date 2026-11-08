@@ -344,7 +344,7 @@
         </div>
     </main>
 
-    <!-- Footer / حقوق الملكية للواجهة الرئيسية -->
+    <!-- Footer -->
     <footer class="bg-blue-950 text-blue-200 py-3 px-6 mt-auto text-center text-xs border-t border-blue-900 no-print">
         <p> © 2026 - هيئة استثمار الديوانية / التحول الرقمي | منظومة سحابية ذكية لمتابعة بيانات المشاريع الاستثمارية المجازة (الشامل)</p>
     </footer>
@@ -511,10 +511,8 @@
         </div>
     </div>
 
-    <!-- JavaScript Obfuscated Protected Core V4.1 -->
+    <!-- JavaScript Core & Official Titles Map -->
     <script>
-        (function(_0x1a2b,_0x3c4d){const _0x5e6f=function(_0x7a8b){while(--_0x7a8b){_0x1a2b['push'](_0x1a2b['shift']());}};_0x5e6f(++_0x3c4d);}(['\x41\x49\x7a\x61\x53\x79\x42\x5a\x6e\x37\x4c\x61\x67\x65\x65\x73\x4f\x56\x74\x71\x53\x46\x75\x78\x74\x45\x50\x57\x6b\x57\x78\x77\x6b\x4c\x44\x47\x43\x31\x63','\x64\x69\x63\x2d\x61\x6c\x73\x68\x61\x6d\x65\x6c\x2e\x66\x69\x72\x65\x62\x61\x73\x65\x61\x70\x70\x2e\x63\x6f\x6d','\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x69\x63\x2d\x61\x6c\x73\x68\x61\x6d\x65\x6c\x2d\x64\x65\x66\x61\x75\x6c\x74\x2d\x72\x74\x64\x62\x2e\x66\x69\x72\x65\x62\x61\x73\x65\x69\x6f\x2e\x63\x6f\x6d','\x64\x69\x63\x2d\x61\x6c\x73\x68\x61\x6d\x65\x6c'],0x19));
-        
         const _0xdbConfig = {
             apiKey: "AIzaSyBZn7LageesOVtqSFuxtEPWkWxwkLDGC1c",
             authDomain: "dic-alshamel.firebaseapp.com",
@@ -535,23 +533,24 @@
         }
 
         const _0xusrMap = {
-            'admin': { pass: 'Ttnet1212', role: 'admin' },
-            'diw': { pass: 'diw09', role: 'user' },
-            'manag': { pass: '951', role: 'user' },
-            'dep': { pass: '753', role: 'user' },
-            'win': { pass: '846', role: 'user' },
-            'eco': { pass: '927', role: 'user' },
-            'law': { pass: '294', role: 'user' },
-            'pr': { pass: '834', role: 'user' },
-            'aud': { pass: '175', role: 'user' },
-            'office': { pass: '084', role: 'user' },
-            'folo': { pass: '509', role: 'user' },
-            'test': { pass: 'test001', role: 'user' }
-        };
+            'admin': { pass: 'Ttnet1212', role: 'admin', title: 'مدير النظام' },
+            'diw': { pass: 'diw09', role: 'user', title: 'هيئة الاستثمار' },
+            'manag': { pass: '951', role: 'user', title: ' رئيس الهيئة' },
+            'dep': { pass: '753', role: 'user', title: ' نائب ر. الهيئة ' },
+            'win': { pass: '846', role: 'user', title: 'قسم النافذة الواحدة' },
+            'eco': { pass: '927', role: 'user', title: 'القسم الاقتصادي والفني' },
+            'law': { pass: '294', role: 'user', title: 'القسم القانوني' },
+            'pr': { pass: '834', role: 'user', title: 'قسم العلاقات والإعلام' },
+            'aud': { pass: '175', role: 'user', title: 'قسم التدقيق والرقابة الداخلية' },
+            'office': { pass: '084', role: 'user', title: 'مكتب رئيس الهيئة' },
+            'folo': { pass: '509', role: 'user', title: 'شعبة المتابعة' },
+            'test': { pass: 'test001', role: 'user', title: 'حساب تجريبي' }
+        };حقوق
 
         let projects = [];
         let currentUsername = '';
         let currentUserRole = null; 
+        let currentTitle = '';
         let statusChartInstance = null;
         let sectorChartInstance = null;
         let currentQuickFilter = 'all';
@@ -568,7 +567,7 @@
                     timestamp: Date.now(),
                     formattedTime: timeStr,
                     username: currentUsername || 'زائر',
-                    role: currentUserRole || 'غير محدد',
+                    role: currentTitle || 'غير محدد',
                     actionType: actionType,
                     details: details
                 }).catch(err => console.warn("Audit fault:", err));
@@ -591,10 +590,11 @@
             if (_0xusrMap[uVal] && _0xusrMap[uVal].pass === pVal) {
                 currentUsername = rawUser;
                 currentUserRole = _0xusrMap[uVal].role;
+                currentTitle = _0xusrMap[uVal].title;
                 document.getElementById('loginModal').classList.add('hidden');
                 
                 initApp();
-                logUserActivity('تسجيل دخول', `تم تسجيل الدخول بنجاح للمستخدم: ${rawUser}`);
+                logUserActivity('تسجيل دخول', `تم تسجيل الدخول بنجاح للمستخدم: ${rawUser} (${currentTitle})`);
             } else {
                 if(errEl) {
                     errEl.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
@@ -605,14 +605,14 @@
         }
 
         function logoutSystem() {
-            logUserActivity('تسجيل خروج', `قام المستخدم ${currentUsername} بإنهاء الجلسة.`);
+            logUserActivity('تسجيل خروج', `قام المستخدم ${currentUsername} (${currentTitle}) بإنهاء الجلسة.`);
             location.reload();
         }
 
         function initApp() {
             const roleBadge = document.getElementById('userRoleText');
             if (currentUserRole === 'admin') {
-                if(roleBadge) roleBadge.textContent = `حساب: ${currentUsername} (مدير النظام Admin) 🛡️`;
+                if(roleBadge) roleBadge.textContent = `المسمى الوظيفي: ${currentTitle} 🛡️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'flex';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'flex';
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'flex';
@@ -622,7 +622,7 @@
                 if(document.getElementById('adminAiBtn')) document.getElementById('adminAiBtn').classList.remove('hidden');
                 if(document.getElementById('adminExecBtn')) document.getElementById('adminExecBtn').classList.remove('hidden');
             } else {
-                if(roleBadge) roleBadge.textContent = `حساب: ${currentUsername} (إدارة الهيئة) 👁️`;
+                if(roleBadge) roleBadge.textContent = `المسمى الوظيفي: ${currentTitle} 👁️`;
                 if(document.getElementById('adminBtnAdd')) document.getElementById('adminBtnAdd').style.display = 'none';
                 if(document.getElementById('adminBtnExcel')) document.getElementById('adminBtnExcel').style.display = 'none'; 
                 if(document.getElementById('adminLblImport')) document.getElementById('adminLblImport').style.display = 'none';
